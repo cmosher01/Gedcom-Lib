@@ -1,4 +1,4 @@
-package nu.mine.mosher.gedcom.servlet.struct;
+package nu.mine.mosher.gedcom.model;
 /*
  * Created on 2006-10-13.
  */

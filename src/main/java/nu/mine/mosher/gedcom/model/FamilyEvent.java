@@ -1,7 +1,7 @@
 /*
  * Created on Nov 5, 2006
  */
-package nu.mine.mosher.gedcom.servlet.struct;
+package nu.mine.mosher.gedcom.model;
 
 public class FamilyEvent implements Comparable<FamilyEvent>
 {

@@ -1,4 +1,4 @@
-package nu.mine.mosher.gedcom.servlet;
+package nu.mine.mosher.gedcom.model;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -13,11 +13,6 @@ import nu.mine.mosher.gedcom.GedcomTag;
 import nu.mine.mosher.gedcom.GedcomTree;
 import nu.mine.mosher.gedcom.date.parser.GedcomDateValueParser;
 import nu.mine.mosher.gedcom.date.parser.ParseException;
-import nu.mine.mosher.gedcom.servlet.struct.Event;
-import nu.mine.mosher.gedcom.servlet.struct.EventNames;
-import nu.mine.mosher.gedcom.servlet.struct.Partnership;
-import nu.mine.mosher.gedcom.servlet.struct.Person;
-import nu.mine.mosher.gedcom.servlet.struct.Source;
 import nu.mine.mosher.gedcom.date.DatePeriod;
 import nu.mine.mosher.gedcom.date.DateRange.DatesOutOfOrder;
 import nu.mine.mosher.time.Time;
@@ -338,7 +333,7 @@ public class Loader
 			}
 		}
 		// TODO handle case of date == null (see grojs for example)
-		return new Event(whichEvent,date,HtmlUtil.escapeHtml(place),HtmlUtil.escapeHtml(note),source);
+		return new Event(whichEvent,date,place,note,source);
 	}
 
 	private Source parseSource(final TreeNode<GedcomLine> node)
@@ -394,7 +389,7 @@ public class Loader
 				}
 			}
 		}
-		return new Source(HtmlUtil.escapeHtml(author),HtmlUtil.escapeHtml(title),HtmlUtil.escapeHtml(publication),HtmlUtil.smartEscapeHtml(pointingText+text),uuid);
+		return new Source(author,title,publication,pointingText+text,uuid);
 	}
 
 	private static String getSourcePtText(TreeNode<GedcomLine> node)

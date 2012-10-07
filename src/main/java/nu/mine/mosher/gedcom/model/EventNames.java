@@ -1,4 +1,4 @@
-package nu.mine.mosher.gedcom.servlet.struct;
+package nu.mine.mosher.gedcom.model;
 import java.util.HashMap;
 import java.util.Map;
 import nu.mine.mosher.gedcom.GedcomTag;

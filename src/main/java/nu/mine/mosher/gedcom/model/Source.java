@@ -1,4 +1,4 @@
-package nu.mine.mosher.gedcom.servlet.struct;
+package nu.mine.mosher.gedcom.model;
 
 import java.text.BreakIterator;
 import java.util.UUID;
