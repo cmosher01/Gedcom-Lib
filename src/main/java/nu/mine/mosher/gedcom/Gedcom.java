@@ -39,13 +39,19 @@ public final class Gedcom
     }
 
     public static GedcomTree parseFile(File in) throws IOException,
+            UnsupportedEncodingException, FileNotFoundException, InvalidLevel
+    {
+        return parseFile(in,true);
+    }
+
+    public static GedcomTree parseFile(File in, boolean removeConcCont) throws IOException,
         UnsupportedEncodingException, FileNotFoundException, InvalidLevel
     {
         String charset = getCharset(in);
-        return readTree(in, charset);
+        return readTree(in, charset, removeConcCont);
     }
 
-    protected static GedcomTree readTree(File fileIn, String charset)
+    protected static GedcomTree readTree(File fileIn, String charset, boolean removeConcCont)
         throws UnsupportedEncodingException, FileNotFoundException,
         InvalidLevel
     {
@@ -54,7 +60,7 @@ public final class Gedcom
         {
             in = new BufferedReader(new InputStreamReader(new FileInputStream(
                 fileIn), charset));
-            return readTree(in);
+            return readTree(in,removeConcCont);
         }
         finally
         {
@@ -73,6 +79,12 @@ public final class Gedcom
     }
 
     public static GedcomTree readTree(final BufferedReader reader)
+            throws InvalidLevel
+    {
+        return readTree(reader,true);
+    }
+
+    public static GedcomTree readTree(final BufferedReader reader, boolean removeConcCont)
         throws InvalidLevel
     {
         final GedcomParser parser = new GedcomParser(reader);
@@ -83,8 +95,10 @@ public final class Gedcom
             tree.appendLine(line);
         }
 
-        final GedcomConcatenator concat = new GedcomConcatenator(tree);
-        concat.concatenate();
+        if (removeConcCont) {
+            final GedcomConcatenator concat = new GedcomConcatenator(tree);
+            concat.concatenate();
+        }
 
         return tree;
     }
