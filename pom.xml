@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>nu.mine.mosher.gedcom</groupId>
   <artifactId>gedcom-lib</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -19,6 +19,7 @@
   </distributionManagement>
   <scm>
     <developerConnection>scm:git:[fetch=]https://github.com/cmosher01/Gedcom-Lib.git[push=]git@github.com:cmosher01/Gedcom-Lib.git</developerConnection>
+    <tag>gedcom-lib-1.0.0</tag>
   </scm>
   <build>
     <finalName>genealogy</finalName>
