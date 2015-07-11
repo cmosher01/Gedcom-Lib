@@ -1,0 +1,35 @@
+plugins {
+    id 'ca.coglinc.javacc' version '2.2.0'
+    id 'org.asciidoctor.gradle.asciidoctor' version '1.5.1'
+    id 'org.asciidoctor.convert' version '1.5.2'
+}
+
+
+
+repositories {
+    maven {
+        url 'http://mosher.mine.nu/nexus/content/groups/public'
+    }
+}
+
+apply plugin: 'java'
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: 'latest.release'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: 'latest.release'
+}
+
+
+
+apply plugin: 'org.asciidoctor.convert'
+
+asciidoctor {
+    attributes 'source-highlighter': 'coderay'
+}
+
+
+
+apply plugin: 'maven'
+
+group = 'nu.mine.mosher.gedcom'
+version = '1.0.1-SNAPSHOT'

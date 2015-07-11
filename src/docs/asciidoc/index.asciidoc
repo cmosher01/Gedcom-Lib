@@ -1,0 +1,28 @@
+Gedcom-Lib
+==========
+Christopher A. Mosher <cmosher01@gmail.com>
+
+
+
+Gedomc-Lib is a Java parser for GEDCOM files.
+
+This software is distributed under the
+http://www.gnu.org/licenses/gpl-3.0-standalone.html[GPLv3]
+license.
+
+The source code is hosted at github: https://github.com/cmosher01/Gedcom-Lib[]
+
+[source,java]
+-----------------------------------------------------------------
+import java.io.File;
+import nu.mine.mosher.gedcom.Gedcom;
+import nu.mine.mosher.gedcom.GedcomTree;
+import nu.mine.mosher.gedcom.model.Loader;
+...
+
+    void load(final File fileGedcom ) {
+        final GedcomTree gt = Gedcom.parseFile(fileGedcom);
+        final Loader loader = new Loader(gt,fileGedcom.getName());
+        loader.parse();
+    }
+-----------------------------------------------------------------

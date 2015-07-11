@@ -1,0 +1,5 @@
+---
+gedcomlib:
+  build: .
+  ports:
+    - 80
