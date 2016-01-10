@@ -90,9 +90,19 @@ public final class Gedcom
         final GedcomParser parser = new GedcomParser(reader);
 
         final GedcomTree tree = new GedcomTree();
+        int i = 0;
         for (final GedcomLine line : parser)
         {
-            tree.appendLine(line);
+            ++i;
+            try
+            {
+                tree.appendLine(line);
+            }
+            catch (final InvalidLevel err)
+            {
+                System.err.println("at line number "+i);
+                throw err;
+            }
         }
 
         if (removeConcCont) {
