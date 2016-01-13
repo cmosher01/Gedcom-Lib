@@ -2,9 +2,6 @@ package nu.mine.mosher.gedcom;
 
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 
 import nu.mine.mosher.collection.TreeNode;
@@ -12,35 +9,31 @@ import nu.mine.mosher.collection.TreeNode;
 
 
 /**
- * Handles CONT and CONC tags in a given <code>GedcomTree</code> by appending
- * their values to the previous <code>GedcomLine</code>.
  * @author Chris Mosher
  */
 class GedcomUnconcatenator {
-    private static final int MAX_WIDTH = 200;
+    public static final int DEFAULT_MAX_LENGTH = 60;
 
     private final GedcomTree tree;
+    private final int maxLength;
 
-    /**
-     * @param tree
-     */
     public GedcomUnconcatenator(final GedcomTree tree) {
+        this(tree, DEFAULT_MAX_LENGTH);
+    }
+
+    public GedcomUnconcatenator(final GedcomTree tree, final int maxLength) {
         this.tree = tree;
+        this.maxLength = maxLength;
     }
 
     public void unconcatenate() {
         unconc(this.tree.getRoot());
     }
 
-    private void unconc(TreeNode<GedcomLine> node) {
-        TreeNode<GedcomLine> xx = null;
-        for (final TreeNode<GedcomLine> nodeChild : node) {
-            if (xx == null) {
-                xx = nodeChild;
-            }
-            unconc(nodeChild);
-        }
-        final TreeNode<GedcomLine> existingFirstChild = xx;
+    private void unconc(final TreeNode<GedcomLine> node) {
+        node.forEach(n -> unconc(n));
+
+        final TreeNode<GedcomLine> existingFirstChild = node.children().hasNext() ? node.children().next() : null;
 
         final GedcomLine gedcomLine = node.getObject();
 
@@ -49,11 +42,11 @@ class GedcomUnconcatenator {
             if (needsWork(value)) {
                 final TreeSet<GedcomLine> currLine = new TreeSet<>();
                 currLine.add(new GedcomLine(gedcomLine.getLevel(), "@"+gedcomLine.getID()+"@", gedcomLine.getTag().name(), ""));
-                StringBuilder currValue = new StringBuilder(MAX_WIDTH);
+                final StringBuilder currValue = new StringBuilder(this.maxLength);
                 value.codePoints().forEach(c -> {
                     if (c == '\n') {
                         writeChild(node, existingFirstChild, currLine, currValue, GedcomTag.CONT);
-                    } else if (currValue.length() >= MAX_WIDTH) {
+                    } else if (currValue.length() >= this.maxLength) {
                         writeChild(node, existingFirstChild, currLine, currValue, GedcomTag.CONC);
                         currValue.appendCodePoint(c);
                     } else {
@@ -83,7 +76,7 @@ class GedcomUnconcatenator {
         currValue.setLength(0);
     }
 
-    private static boolean needsWork(final String value) {
-        return value.length() > MAX_WIDTH || value.contains("\n");
+    private boolean needsWork(final String value) {
+        return value.length() > this.maxLength || value.contains("\n");
     }
 }
