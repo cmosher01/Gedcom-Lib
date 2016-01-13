@@ -7,7 +7,7 @@ package nu.mine.mosher.gedcom;
  * immutable.
  * @author Chris Mosher
  */
-public class GedcomLine
+public class GedcomLine implements Comparable<GedcomLine>
 {
     private final int level;
     private final String id;
@@ -86,11 +86,44 @@ public class GedcomLine
     {
         return s.replaceAll("@@", "@");
     }
+    private static String restoreAts(final String s)
+    {
+        return s.replaceAll("@", "@@");
+    }
 
     @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(256);
+
+        sb.append(Integer.toString(this.level)).append(" ");
+
+        if (hasID())
+        {
+            sb.append("@").append(this.id).append("@ ");
+        }
+
+        sb.append(this.tagString);
+
+        if (isPointer() || this.value.length() > 0)
+        {
+            sb.append(" ");
+        }
+
+        if (isPointer())
+        {
+            sb.append("@").append(this.pointer).append("@");
+        }
+        else
+        {
+            String v = this.value;
+            if (!this.tag.equals(GedcomTag.DATE))
+            {
+                v = restoreAts(v);
+            }
+            sb.append(v);
+        }
+        /*
         if (hasID())
         {
             sb.append(this.id);
@@ -107,6 +140,7 @@ public class GedcomLine
         {
             appendFilteredValue(this.value, sb);
         }
+        */
         return sb.toString();
     }
 
@@ -225,5 +259,17 @@ public class GedcomLine
     {
         return new GedcomLine(this.id, this.level, this.pointer, this.tag,
             this.tagString, this.value + sConcatenatedLine);
+    }
+
+    @Override
+    public int compareTo(final GedcomLine that) {
+        int c = 0;
+        if (c == 0) {
+            c = this.tagString.compareTo(that.tagString);
+        }
+        if (c == 0) {
+            c = this.value.compareTo(that.value);
+        }
+        return c;
     }
 }

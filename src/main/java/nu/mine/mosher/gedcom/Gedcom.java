@@ -2,14 +2,8 @@ package nu.mine.mosher.gedcom;
 
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.charset.Charset;
 
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
 
@@ -34,32 +28,44 @@ public final class Gedcom
             throw new IllegalArgumentException("usage: java Gedcom gedcomfile");
         }
 
-        GedcomTree gt = parseFile(new File(rArg[0]));
-        System.out.println(gt.toString());
+        final File in = new File(rArg[0]);
+        final Charset charset = getCharset(in);
+
+        final GedcomTree gt = parseFile(in, charset);
+
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileDescriptor.out), charset));
+        writeFile(gt, out);
+        out.close();
     }
 
-    public static GedcomTree parseFile(File in) throws IOException,
+    private static void writeFile(GedcomTree gt, BufferedWriter out) throws IOException
+    {
+        final GedcomUnconcatenator concat = new GedcomUnconcatenator(gt);
+        concat.unconcatenate();
+        out.write(gt.toString());
+        out.flush();
+    }
+
+    public static GedcomTree parseFile(File in, Charset charset) throws IOException,
             UnsupportedEncodingException, FileNotFoundException, InvalidLevel
     {
-        return parseFile(in,true);
+        return parseFile(in, charset, true);
     }
 
-    public static GedcomTree parseFile(File in, boolean removeConcCont) throws IOException,
+    public static GedcomTree parseFile(File in, Charset charset, boolean removeConcCont) throws IOException,
         UnsupportedEncodingException, FileNotFoundException, InvalidLevel
     {
-        String charset = getCharset(in);
         return readTree(in, charset, removeConcCont);
     }
 
-    protected static GedcomTree readTree(File fileIn, String charset, boolean removeConcCont)
+    protected static GedcomTree readTree(File fileIn, Charset charset, boolean removeConcCont)
         throws UnsupportedEncodingException, FileNotFoundException,
         InvalidLevel
     {
         BufferedReader in = null;
         try
         {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream(
-                fileIn), charset));
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(fileIn), charset));
             return readTree(in,removeConcCont);
         }
         finally
@@ -113,13 +119,13 @@ public final class Gedcom
         return tree;
     }
 
-    public static String getCharset(final File f) throws IOException
+    public static Charset getCharset(final File f) throws IOException
     {
         InputStream in = null;
         try
         {
             in = new FileInputStream(f);
-            return guessGedcomCharset(in);
+            return Charset.forName(guessGedcomCharset(in));
         }
         finally
         {

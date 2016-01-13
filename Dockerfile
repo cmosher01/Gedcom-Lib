@@ -22,7 +22,8 @@ RUN ln -s /etc/nginx/sites-available/maven.nginx /etc/nginx/sites-enabled/maven.
 WORKDIR /root/
 
 # install wrapper and download into cache
-COPY gradle/ ./
+COPY gradle/ gradle/
+COPY gradlew ./
 RUN ./gradlew --dry-run
 
 COPY settings.gradle ./

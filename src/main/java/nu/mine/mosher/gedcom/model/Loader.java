@@ -29,8 +29,8 @@ public class Loader
 	private final GedcomTree gedcom;
 	private final String name;
 
-	private final Map<UUID,Person> mapUUIDtoPerson = new HashMap<UUID,Person>();
-	private final Map<UUID,Source> mapUUIDtoSource = new HashMap<UUID,Source>();
+	private final Map<UUID,Person> mapUUIDtoPerson = new HashMap<>();
+	private final Map<UUID,Source> mapUUIDtoSource = new HashMap<>();
 
 	private Person first;
 	private String description;
@@ -49,7 +49,7 @@ public class Loader
 	{
 		final TreeNode<GedcomLine> root = this.gedcom.getRoot();
 
-		final Collection<TreeNode<GedcomLine>> rNodeTop = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNodeTop = new ArrayList<>();
 		getChildren(root,rNodeTop);
 
 		for (final TreeNode<GedcomLine> nodeTop : rNodeTop)
@@ -64,7 +64,7 @@ public class Loader
 			}
 		}
 
-		final Map<String,Person> mapIDtoPerson = new HashMap<String,Person>();
+		final Map<String,Person> mapIDtoPerson = new HashMap<>();
 
 		for (final TreeNode<GedcomLine> nodeTop : rNodeTop)
 		{
@@ -94,10 +94,7 @@ public class Loader
 			}
 		}
 
-		for (final Person person: mapIDtoPerson.values())
-		{
-			person.initKeyDates();
-		}
+		mapIDtoPerson.values().forEach(Person::initKeyDates);
 	}
 
 	public String getName()
@@ -172,7 +169,7 @@ public class Loader
 
 	private static String parseHead(final TreeNode<GedcomLine> head)
 	{
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(head,rNode);
 
 		for (final TreeNode<GedcomLine> node : rNode)
@@ -191,10 +188,10 @@ public class Loader
 	{
 		String name = "[unknown]";
 		UUID uuid = null;
-		final ArrayList<Event> rEvent = new ArrayList<Event>();
+		final ArrayList<Event> rEvent = new ArrayList<>();
 		boolean isPrivate = false;
 
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(nodeIndi,rNode);
 
 		for (final TreeNode<GedcomLine> node : rNode)
@@ -213,7 +210,7 @@ public class Loader
 				}
 				catch (final Throwable e)
 				{
-					System.err.println("Error while parsing inidividual \""+name+"\"");
+					System.err.println("Error while parsing individual \""+name+"\"");
 					e.printStackTrace();
 					uuid = null;
 				}
@@ -229,7 +226,7 @@ public class Loader
 			}
 		}
 
-		return new Person(nodeIndi.getObject().getID(),name,rEvent,new ArrayList<Partnership>(),isPrivate,uuid);
+		return new Person(nodeIndi.getObject().getID(),name,rEvent,new ArrayList<>(),isPrivate,uuid);
 	}
 
 	private static UUID parseUuid(final TreeNode<GedcomLine> nodeUuid) {
@@ -241,10 +238,10 @@ public class Loader
 	{
 		Person husb = null;
 		Person wife = null;
-		final ArrayList<Person> rChild = new ArrayList<Person>();
-		final ArrayList<Event> rEvent = new ArrayList<Event>();
+		final ArrayList<Person> rChild = new ArrayList<>();
+		final ArrayList<Event> rEvent = new ArrayList<>();
 		
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(nodeFam,rNode);
 
 		for (final TreeNode<GedcomLine> node : rNode)
@@ -288,7 +285,7 @@ public class Loader
 	{
 		final String whichEvent = getEventName(nodeEvent);
 
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(nodeEvent,rNode);
 
 		DatePeriod date = null;
@@ -347,7 +344,7 @@ public class Loader
 			return null;
 		}
 
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(nodeSource,rNode);
 
 		String author = "";
@@ -394,7 +391,7 @@ public class Loader
 
 	private static String getSourcePtText(TreeNode<GedcomLine> node)
 	{
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(node,rNode);
 		for (final TreeNode<GedcomLine> n : rNode)
 		{
@@ -411,7 +408,7 @@ public class Loader
 	private static String parseData(TreeNode<GedcomLine> node)
 	{
 		final StringBuilder sb = new StringBuilder(256);
-		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(node,rNode);
 		for (final TreeNode<GedcomLine> n : rNode)
 		{
@@ -456,7 +453,7 @@ public class Loader
 		final GedcomTag tag = node.getObject().getTag();
 		if (tag.equals(GedcomTag.EVEN))
 		{
-			final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<TreeNode<GedcomLine>>();
+			final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 			getChildren(node,rNode);
 			for (final TreeNode<GedcomLine> n : rNode)
 			{

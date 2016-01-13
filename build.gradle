@@ -12,6 +12,15 @@ repositories {
     }
 }
 
+apply plugin: 'idea'
+
+idea {
+    module {
+        generatedSourceDirs += file("$buildDir/generated/javacc")
+        excludeDirs -= file(buildDir)
+    }
+}
+
 apply plugin: 'java'
 
 dependencies {
@@ -19,6 +28,17 @@ dependencies {
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: 'latest.release'
 }
 
+sourceSets {
+    main {
+        java.srcDir "$buildDir/generated/javacc"
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'nu.mine.mosher.gedcom.Gedcom'
+    }
+}
 
 
 apply plugin: 'org.asciidoctor.convert'

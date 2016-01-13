@@ -4,6 +4,7 @@ package nu.mine.mosher.collection;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  * @author Chris Mosher
  * @param <T> type of object in each node
  */
-public class TreeNode<T> implements Iterable<TreeNode<T>>
+public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>, Comparable<TreeNode<T>>
 {
     private T object;
 
@@ -89,6 +90,38 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>
 
         this.children.add(child);
         child.parent = this;
+    }
+
+    public void addChildBefore(final TreeNode<T> child, final TreeNode<T> before)
+    {
+        if (child.parent != null)
+        {
+            child.removeFromParent();
+        }
+
+        this.children.add(this.children.indexOf(before), child);
+        child.parent = this;
+    }
+
+    public void sortDeep() {
+        for (final TreeNode<T> child : this.children) {
+            child.sortDeep();
+        }
+        Collections.sort(this.children);
+    }
+
+    @Override
+    public int compareTo(final TreeNode<T> that) {
+        if (this.object == null && that.object == null) {
+            return 0;
+        }
+        if (this.object == null) {
+            return -1;
+        }
+        if (that.object == null) {
+            return +1;
+        }
+        return this.object.compareTo(that.object);
     }
 
     /**
@@ -179,6 +212,11 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>
         return sb.toString();
     }
 
+    public void appendStringDeep(final Appendable appendTo) throws IOException
+    {
+        appendStringDeep(appendTo, false);
+    }
+
     /**
      * Builds an outline-style string representation of the tree rooted at this
      * node, and appends it to the given <code>Appendable</code>
@@ -186,24 +224,30 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>
      * @throws IOException if an I/O exception occurs while appending to
      *             <code>appendTo</code>
      */
-    public void appendStringDeep(final Appendable appendTo) throws IOException
+    public void appendStringDeep(final Appendable appendTo, final boolean indent) throws IOException
     {
-        appendStringDeep(appendTo, 0);
+        appendStringDeep(appendTo, indent, 0);
     }
 
-    private void appendStringDeep(final Appendable appendTo, final int level) throws IOException
+    private void appendStringDeep(final Appendable appendTo, final boolean indent, final int level) throws IOException
     {
-        for (int i = 0; i < level; ++i)
+        if (indent)
         {
-            appendTo.append("    ");
+            for (int i = 0; i < level; ++i)
+            {
+                appendTo.append("    ");
+            }
         }
 
-        appendStringShallow(appendTo);
-        appendTo.append("\n");
+        if (this.object != null)
+        {
+            appendTo.append(this.object.toString());
+            appendTo.append("\n");
+        }
 
         for (final TreeNode<T> child : this.children)
         {
-            child.appendStringDeep(appendTo, level + 1);
+            child.appendStringDeep(appendTo, indent, level + 1);
         }
     }
 
@@ -219,10 +263,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>
         if (this.object != null)
         {
             appendTo.append(this.object.toString());
-        }
-        else
-        {
-            appendTo.append("[null]");
         }
     }
 

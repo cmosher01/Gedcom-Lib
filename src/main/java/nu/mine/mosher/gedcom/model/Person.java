@@ -28,13 +28,13 @@ public class Person implements Comparable<Person>
     private final String ID;
     private final String name;
     private final ArrayList<Event> rEvent;
-    private final ArrayList<Partnership> rParnership;
+    private final ArrayList<Partnership> rPartnership;
     private final boolean isPrivate;
 
     private Time birth = new Time(new Date(0));
     private Time death = new Time(new Date(0));
-    private List<Time> rMarriage = new ArrayList<Time>();
-    private List<Time> rDivorce = new ArrayList<Time>();
+    private List<Time> rMarriage = new ArrayList<>();
+    private List<Time> rDivorce = new ArrayList<>();
 
     private Person father;
     private Person mother;
@@ -61,11 +61,11 @@ public class Person implements Comparable<Person>
         this.ID = ID;
         this.name = name;
         this.rEvent = rEvent;
-        this.rParnership = partnership;
+        this.rPartnership = partnership;
         this.isPrivate = isPrivate;
 
-        Collections.<Event> sort(this.rEvent);
-        Collections.<Partnership> sort(this.rParnership);
+        Collections.sort(this.rEvent);
+        Collections.sort(this.rPartnership);
     }
 
     public void initKeyDates()
@@ -93,9 +93,9 @@ public class Person implements Comparable<Person>
         {
             this.death = YMD.getMaximum().getApproxTime();
         }
-        if (this.rParnership.size() > 0)
+        if (this.rPartnership.size() > 0)
         {
-            for (final Partnership par : this.rParnership)
+            for (final Partnership par : this.rPartnership)
             {
                 boolean mar = false;
                 boolean div = false;
@@ -137,11 +137,6 @@ public class Person implements Comparable<Person>
                 if (!div)
                 {
                     this.rDivorce.add(this.death);
-                    div = true;
-                }
-                if (!div)
-                {
-                    this.rDivorce.add(YMD.getMaximum().getApproxTime());
                     div = true;
                 }
                 assert mar && div;
@@ -230,7 +225,7 @@ public class Person implements Comparable<Person>
 
     public ArrayList<Event> getEventsWithin(final DatePeriod period)
     {
-        final ArrayList<Event> rWithin = new ArrayList<Event>();
+        final ArrayList<Event> rWithin = new ArrayList<>();
         for (final Event event : this.rEvent)
         {
             if (event.getDate() == null)
@@ -247,7 +242,7 @@ public class Person implements Comparable<Person>
 
     public ArrayList<Partnership> getPartnerships()
     {
-        return this.rParnership;
+        return this.rPartnership;
     }
 
     /**
@@ -290,7 +285,7 @@ public class Person implements Comparable<Person>
 
     public ArrayList<FamilyEvent> getFamilyEvents()
     {
-        final ArrayList<FamilyEvent> rEventRet = new ArrayList<FamilyEvent>();
+        final ArrayList<FamilyEvent> rEventRet = new ArrayList<>();
 
         getEventsOfSelf(rEventRet);
         getEventsOfPartnership(rEventRet);
@@ -299,7 +294,7 @@ public class Person implements Comparable<Person>
         getEventsOfSpouses(rEventRet);
         getEventsOfChildren(rEventRet);
 
-        Collections.<FamilyEvent> sort(rEventRet);
+        Collections.sort(rEventRet);
 
         return rEventRet;
     }
@@ -314,7 +309,7 @@ public class Person implements Comparable<Person>
 
     private void getEventsOfPartnership(final List<FamilyEvent> rEventRet)
     {
-        for (final Partnership part : this.rParnership)
+        for (final Partnership part : this.rPartnership)
         {
             for (final Event event : part.getEvents())
             {
@@ -347,7 +342,7 @@ public class Person implements Comparable<Person>
     private void getEventsOfSpouses(final List<FamilyEvent> rEventRet)
     {
         int p = 0;
-        for (final Partnership partnership : this.rParnership)
+        for (final Partnership partnership : this.rPartnership)
         {
             final Person partner = partnership.getPartner();
             if (partner != null)
@@ -363,7 +358,7 @@ public class Person implements Comparable<Person>
 
     private void getEventsOfChildren(final List<FamilyEvent> rEventRet)
     {
-        for (final Partnership partnership : this.rParnership)
+        for (final Partnership partnership : this.rPartnership)
         {
             for (final Person child : partnership.getChildren())
             {

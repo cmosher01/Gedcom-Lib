@@ -90,15 +90,6 @@ public class GedcomTree
         try
         {
             this.root.appendStringDeep(sb);
-
-            sb.append("--------map-of-IDs-to-Nodes--------\n");
-            for (final Map.Entry<String, TreeNode<GedcomLine>> entry : this.mapIDtoNode.entrySet())
-            {
-                sb.append(entry.getKey());
-                sb.append(" --> ");
-                entry.getValue().appendStringShallow(sb);
-                sb.append("\n");
-            }
         }
         catch (final IOException e)
         {
