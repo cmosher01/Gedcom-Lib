@@ -38,7 +38,7 @@ public final class Gedcom
         out.close();
     }
 
-    private static void writeFile(GedcomTree gt, BufferedWriter out) throws IOException
+    public static void writeFile(GedcomTree gt, BufferedWriter out) throws IOException
     {
         final GedcomUnconcatenator concat = new GedcomUnconcatenator(gt);
         concat.unconcatenate();
