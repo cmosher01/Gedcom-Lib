@@ -3,11 +3,7 @@ package nu.mine.mosher.collection;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
+import java.util.*;
 
 
 /**
@@ -108,6 +104,10 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
             child.sortDeep();
         }
         Collections.sort(this.children);
+    }
+
+    public void sort(final Comparator<TreeNode<T>> comparator) {
+        Collections.sort(this.children, comparator);
     }
 
     @Override

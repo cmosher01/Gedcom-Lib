@@ -21,7 +21,7 @@ import nu.mine.mosher.collection.TreeNode;
 
 /**
  * Parses the given <code>GedcomTree</code> into <code>Person</code> objects.
- * 
+ *
  * <p>Created on 2006-10-09.</p>
  * @author Chris Mosher
  */
@@ -32,6 +32,11 @@ public class Loader
 
 	private final Map<UUID,Person> mapUUIDtoPerson = new HashMap<>();
 	private final Map<UUID,Source> mapUUIDtoSource = new HashMap<>();
+
+	private final Map<TreeNode<GedcomLine>,Person> mapNodeToPerson = new HashMap<>();
+//	private final Map<TreeNode<GedcomLine>,Partnership> mapNodeToPartnership = new HashMap<>();
+	private final Map<TreeNode<GedcomLine>,Source> mapNodeToSource = new HashMap<>();
+	private final Map<TreeNode<GedcomLine>,Event> mapNodeToEvent = new HashMap<>();
 
 	private Person first;
 	private String description;
@@ -75,6 +80,7 @@ public class Loader
 			if (tagTop.equals(GedcomTag.INDI))
 			{
 				final Person person = parseIndividual(nodeTop);
+				this.mapNodeToPerson.put(nodeTop, person);
 				mapIDtoPerson.put(person.getID(),person);
 				storeInUuidMap(person);
 				if (this.first == null)
@@ -123,6 +129,11 @@ public class Loader
 		return this.mapUUIDtoSource.get(uuid);
 	}
 
+	public Person lookUpPerson(final TreeNode<GedcomLine> node) { return this.mapNodeToPerson.get(node); }
+
+	public Source lookUpSource(final TreeNode<GedcomLine> node) { return this.mapNodeToSource.get(node); }
+
+	public Event lookUpEvent(final TreeNode<GedcomLine> node) { return this.mapNodeToEvent.get(node); }
 
 	public void appendAllUuids(final Set<UUID> appendTo)
 	{
@@ -219,6 +230,7 @@ public class Loader
 			else if (GedcomTag.setIndividualEvent.contains(tag) || GedcomTag.setIndividualAttribute.contains(tag))
 			{
 				final Event event = parseEvent(node);
+				this.mapNodeToEvent.put(node, event);
 				rEvent.add(event);
 				if (tag.equals(GedcomTag.BIRT))
 				{
@@ -241,7 +253,7 @@ public class Loader
 		Person wife = null;
 		final ArrayList<Person> rChild = new ArrayList<>();
 		final ArrayList<Event> rEvent = new ArrayList<>();
-		
+
 		final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
 		getChildren(nodeFam,rNode);
 
@@ -266,6 +278,7 @@ public class Loader
 			else if (GedcomTag.setFamilyEvent.contains(tag))
 			{
 				final Event event = parseEvent(node);
+				this.mapNodeToEvent.put(node, event);
 				rEvent.add(event);
 			}
 		}
@@ -326,6 +339,7 @@ public class Loader
 				source = parseSource(node);
 				if (source != null)
 				{
+					this.mapNodeToSource.put(node, source);
 					storeInUuidMap(source);
 				}
 			}
