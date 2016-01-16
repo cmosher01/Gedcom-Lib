@@ -13,6 +13,7 @@ import nu.mine.mosher.gedcom.GedcomTag;
 import nu.mine.mosher.gedcom.GedcomTree;
 import nu.mine.mosher.gedcom.date.parser.GedcomDateValueParser;
 import nu.mine.mosher.gedcom.date.parser.ParseException;
+import nu.mine.mosher.gedcom.date.parser.TokenMgrError;
 import nu.mine.mosher.gedcom.date.DatePeriod;
 import nu.mine.mosher.gedcom.date.DateRange.DatesOutOfOrder;
 import nu.mine.mosher.time.Time;
@@ -305,7 +306,7 @@ public class Loader
 				{
 					date = parser.parse();
 				}
-				catch (final ParseException | DatesOutOfOrder e)
+				catch (final ParseException | DatesOutOfOrder | TokenMgrError e)
 				{
 					System.err.println("Error while parsing \""+sDate+"\"");
 					e.printStackTrace();
