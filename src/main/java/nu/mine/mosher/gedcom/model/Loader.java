@@ -109,6 +109,8 @@ public class Loader
 		return this.name;
 	}
 
+	public GedcomTree getGedcom() { return this.gedcom; }
+
 	public String getDescription()
 	{
 		return this.description;
