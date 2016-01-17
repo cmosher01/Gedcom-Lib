@@ -27,7 +27,7 @@ class GedcomConcatenator
     }
 
     /**
-	 * 
+	 *
 	 */
     public void concatenate()
     {
@@ -70,9 +70,6 @@ class GedcomConcatenator
             }
         }
 
-        for (final TreeNode<GedcomLine> nodeRemove : rToBeRemoved)
-        {
-            nodeRemove.removeFromParent();
-        }
+        rToBeRemoved.forEach(TreeNode::removeFromParent);
     }
 }

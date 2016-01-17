@@ -31,7 +31,7 @@ class GedcomUnconcatenator {
     }
 
     private void unconc(final TreeNode<GedcomLine> node) {
-        node.forEach(n -> unconc(n));
+        node.forEach(this::unconc);
 
         final TreeNode<GedcomLine> existingFirstChild = node.children().hasNext() ? node.children().next() : null;
 

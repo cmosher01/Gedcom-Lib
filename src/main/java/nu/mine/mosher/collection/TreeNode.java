@@ -100,9 +100,7 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
     }
 
     public void sortDeep() {
-        for (final TreeNode<T> child : this.children) {
-            child.sortDeep();
-        }
+        this.children.forEach(TreeNode::sortDeep);
         Collections.sort(this.children);
     }
 

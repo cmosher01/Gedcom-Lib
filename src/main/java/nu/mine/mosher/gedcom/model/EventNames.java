@@ -8,7 +8,7 @@ import nu.mine.mosher.gedcom.GedcomTag;
  */
 public final class EventNames
 {
-	private static final Map<GedcomTag,String> map = new HashMap<GedcomTag,String>();
+	private static final Map<GedcomTag,String> map = new HashMap<>();
 	static
 	{
 		map.put(GedcomTag.EVEN,"[unknown]");

@@ -114,11 +114,7 @@ public class DatePeriod implements Comparable<DatePeriod>
         {
             return this.dateStart.toString();
         }
-        final StringBuilder sb = new StringBuilder(32);
-        sb.append(this.dateStart.toString());
-        sb.append("-");
-        sb.append(this.dateEnd.toString());
-        return sb.toString();
+        return this.dateStart.toString() + "-" + this.dateEnd.toString();
     }
 
     /**

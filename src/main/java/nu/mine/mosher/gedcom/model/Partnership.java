@@ -9,7 +9,7 @@ import java.util.Collections;
 public class Partnership implements Comparable<Partnership>
 {
 	private final ArrayList<Event> rEvent;
-	private final ArrayList<Person> rChild = new ArrayList<Person>();
+	private final ArrayList<Person> rChild = new ArrayList<>();
 
 	private Person partner;
 
@@ -17,7 +17,7 @@ public class Partnership implements Comparable<Partnership>
 	{
 		this.rEvent = rEvent;
 
-		Collections.<Event>sort(this.rEvent);
+		Collections.sort(this.rEvent);
 	}
 
 	public void setPartner(final Person partner)
@@ -44,7 +44,7 @@ public class Partnership implements Comparable<Partnership>
 	{
 		this.rChild.addAll(rChildToAdd);
 
-		Collections.<Person>sort(this.rChild);
+		Collections.sort(this.rChild);
 	}
 
 	public boolean isPrivate()

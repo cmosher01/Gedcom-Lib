@@ -48,7 +48,7 @@ public enum GedcomTag
         set.add(GedcomTag.RETI);
         set.add(GedcomTag.EVEN);
 
-        setIndividualEvent = Collections.<GedcomTag> unmodifiableSet(set);
+        setIndividualEvent = Collections.unmodifiableSet(set);
     }
 
     public static final Set<GedcomTag> setIndividualAttribute;
@@ -70,7 +70,7 @@ public enum GedcomTag
         set.add(GedcomTag.SSN);
         set.add(GedcomTag.TITL);
 
-        setIndividualAttribute = Collections.<GedcomTag> unmodifiableSet(set);
+        setIndividualAttribute = Collections.unmodifiableSet(set);
     }
 
     public static final Set<GedcomTag> setFamilyEvent;
@@ -90,6 +90,6 @@ public enum GedcomTag
         set.add(GedcomTag.MARS);
         set.add(GedcomTag.EVEN);
 
-        setFamilyEvent = Collections.<GedcomTag> unmodifiableSet(set);
+        setFamilyEvent = Collections.unmodifiableSet(set);
     }
 }

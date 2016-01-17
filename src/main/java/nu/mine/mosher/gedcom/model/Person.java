@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import nu.mine.mosher.gedcom.date.DatePeriod;
 import nu.mine.mosher.gedcom.date.DateRange;
@@ -181,15 +182,7 @@ public class Person implements Comparable<Person>
             return this.name;
         }
 
-        final StringBuilder sb = new StringBuilder(32);
-
-        sb.append(matcher.group(1));
-        sb.append("<span class=\"surname\">");
-        sb.append(matcher.group(2));
-        sb.append("</span>");
-        sb.append(matcher.group(3));
-
-        return sb.toString();
+        return matcher.group(1) + "<span class=\"surname\">" + matcher.group(2) + "</span>" + matcher.group(3);
     }
 
     /**
@@ -301,20 +294,14 @@ public class Person implements Comparable<Person>
 
     private void getEventsOfSelf(final List<FamilyEvent> rEventRet)
     {
-        for (final Event event : this.getEvents())
-        {
-            rEventRet.add(new FamilyEvent(this, event, "self"));
-        }
+        rEventRet.addAll(this.getEvents().stream().map(event -> new FamilyEvent(this, event, "self")).collect(Collectors.toList()));
     }
 
     private void getEventsOfPartnership(final List<FamilyEvent> rEventRet)
     {
         for (final Partnership part : this.rPartnership)
         {
-            for (final Event event : part.getEvents())
-            {
-                rEventRet.add(new FamilyEvent(part.getPartner(), event, "spouse"));
-            }
+            rEventRet.addAll(part.getEvents().stream().map(event -> new FamilyEvent(part.getPartner(), event, "spouse")).collect(Collectors.toList()));
         }
     }
 
@@ -332,10 +319,7 @@ public class Person implements Comparable<Person>
     {
         if (parent != null)
         {
-            for (final Event event : parent.getEventsWithin(getChildhood()))
-            {
-                rEventRet.add(new FamilyEvent(parent, event, relation));
-            }
+            rEventRet.addAll(parent.getEventsWithin(getChildhood()).stream().map(event -> new FamilyEvent(parent, event, relation)).collect(Collectors.toList()));
         }
     }
 
@@ -347,10 +331,7 @@ public class Person implements Comparable<Person>
             final Person partner = partnership.getPartner();
             if (partner != null)
             {
-                for (final Event event : partner.getEventsWithin(getPartnerhood(p)))
-                {
-                    rEventRet.add(new FamilyEvent(partnership.getPartner(), event, "spouse"));
-                }
+                rEventRet.addAll(partner.getEventsWithin(getPartnerhood(p)).stream().map(event -> new FamilyEvent(partnership.getPartner(), event, "spouse")).collect(Collectors.toList()));
             }
             ++p;
         }
@@ -362,10 +343,7 @@ public class Person implements Comparable<Person>
         {
             for (final Person child : partnership.getChildren())
             {
-                for (final Event event : child.getEventsWithin(child.getChildhood()))
-                {
-                    rEventRet.add(new FamilyEvent(child, event, "child"));
-                }
+                rEventRet.addAll(child.getEventsWithin(child.getChildhood()).stream().map(event -> new FamilyEvent(child, event, "child")).collect(Collectors.toList()));
             }
         }
     }
