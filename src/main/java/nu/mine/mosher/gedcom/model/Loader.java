@@ -341,7 +341,6 @@ public class Loader
 				source = parseSource(node);
 				if (source != null)
 				{
-					this.mapNodeToSource.put(node, source);
 					storeInUuidMap(source);
 				}
 			}
@@ -403,7 +402,9 @@ public class Loader
 				}
 			}
 		}
-		return new Source(author,title,publication,pointingText+text,uuid);
+		final Source source = new Source(author,title,publication,pointingText+text,uuid);
+		this.mapNodeToSource.put(nodeSource, source);
+		return source;
 	}
 
 	private static String getSourcePtText(TreeNode<GedcomLine> node)
