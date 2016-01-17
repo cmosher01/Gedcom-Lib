@@ -417,7 +417,7 @@ public class Loader
 			final GedcomTag tag = line.getTag();
 			if (tag.equals(GedcomTag.DATA))
 			{
-				return parseData(node);
+				return parseData(n);
 			}
 		}
 		return "";
