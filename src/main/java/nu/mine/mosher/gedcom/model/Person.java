@@ -25,9 +25,12 @@ import nu.mine.mosher.time.Time;
  */
 public class Person implements Comparable<Person>
 {
+    private static final Pattern patternName = Pattern.compile("(.*)/(.*)/(.*)");
+
     private final UUID uuid;
     private final String ID;
     private final String name;
+    private final String nameSortable;
     private final ArrayList<Event> rEvent;
     private final ArrayList<Partnership> rPartnership;
     private final boolean isPrivate;
@@ -61,12 +64,35 @@ public class Person implements Comparable<Person>
         }
         this.ID = ID;
         this.name = name;
+        this.nameSortable = buildSortableName(name);
         this.rEvent = rEvent;
         this.rPartnership = partnership;
         this.isPrivate = isPrivate;
 
         Collections.sort(this.rEvent);
         Collections.sort(this.rPartnership);
+    }
+
+    private static String buildSortableName(String name) {
+        final Matcher matcher = patternName.matcher(name);
+        if (!matcher.matches()) {
+            return name;
+        }
+
+        final StringBuilder sb = new StringBuilder(32);
+        final String surname = matcher.group(2);
+        final String givenName1 = matcher.group(1);
+        final String givenName2 = matcher.group(3);
+        sb.append(surname);
+        if (sb.length() > 0 && givenName1.length() > 0) {
+            sb.append(", ");
+        }
+        sb.append(givenName1);
+        if (sb.length() > 0 && givenName2.length() > 0) {
+            sb.append(", ");
+        }
+        sb.append(givenName2);
+        return sb.toString();
     }
 
     public void initKeyDates()
@@ -171,7 +197,9 @@ public class Person implements Comparable<Person>
         return this.name.replaceAll("/", "");
     }
 
-    private static final Pattern patternName = Pattern.compile("(.*)/(.*)/(.*)");
+    public String getNameSortable() {
+        return this.nameSortable;
+    }
 
     public String getClassedName()
     {
