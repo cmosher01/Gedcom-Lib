@@ -9,6 +9,7 @@ import java.util.UUID;
 public class Source
 {
 	private final UUID uuid;
+	private final String ID;
 	private final String author;
 	private final String title;
 	private final String publication;
@@ -20,8 +21,9 @@ public class Source
 	 * @param title
 	 * @param publication
 	 */
-	public Source(final String author, final String title, final String publication,final String text, final UUID uuid)
+	public Source(final String ID, final String author, final String title, final String publication,final String text, final UUID uuid)
 	{
+		this.ID = ID;
 		if (uuid == null)
 		{
 			this.uuid = UUID.randomUUID();
@@ -36,6 +38,10 @@ public class Source
 		this.text = text;
 
 		this.shortName = buildShortName();
+	}
+
+	public String getID() {
+		return this.ID;
 	}
 
 	private String buildShortName()

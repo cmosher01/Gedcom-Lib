@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
-
+import nu.mine.mosher.gedcom.model.Loader;
 
 
 /**
@@ -32,6 +32,9 @@ public final class Gedcom
         final Charset charset = getCharset(in);
 
         final GedcomTree gt = parseFile(in, charset);
+
+//        final Loader loader = new Loader(gt, rArg[0]);
+//        loader.parse();
 
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileDescriptor.out), charset));
         writeFile(gt, out);

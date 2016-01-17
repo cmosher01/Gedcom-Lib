@@ -12,21 +12,25 @@ public class Event implements Comparable<Event>
 	private final String place;
 	private final String note;
 	private final Source source;
+	private final String citationPage;
+	private final String citationExtraText;
 
 	/**
 	 * @param type
 	 * @param date
 	 * @param place
-	 * @param note 
-	 * @param source 
+	 * @param note
+	 * @param source
 	 */
-	public Event(final String type, final DatePeriod date, final String place, final String note, final Source source)
+	public Event(final String type, final DatePeriod date, final String place, final String note, final Source source, final String citationPage, final String citationExtraText)
 	{
 		this.type = type;
 		this.date = date;
 		this.place = place;
 		this.note = note;
 		this.source = source;
+		this.citationPage = citationPage;
+		this.citationExtraText = citationExtraText;
 	}
 
 	public String getType()
@@ -49,6 +53,8 @@ public class Event implements Comparable<Event>
 	{
 		return this.source;
 	}
+	public String getCitationPage() { return citationPage; }
+	public String getCitationExtraText() { return citationExtraText; }
 
 	@Override
 	public int compareTo(final Event that)
