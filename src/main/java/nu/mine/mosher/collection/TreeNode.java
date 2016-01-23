@@ -63,6 +63,8 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
         return this.children.iterator();
     }
 
+    public ListIterator<TreeNode<T>> childrenList() { return this.children.listIterator(); }
+
     /**
      * Gets the count of (immediate) children of this node.
      * @return the count of immediate children

@@ -129,16 +129,18 @@ public class DatePeriod implements Comparable<DatePeriod>
         {
             return -1;
         }
-        int d = 0;
-        if (d == 0)
-        {
-            d = this.dateStart.compareTo(that.dateStart);
+
+        final DateRange thisDate = this.dateStart.equals(DateRange.UNKNOWN) ? this.dateEnd : this.dateStart;
+        final DateRange thatDate = that.dateStart.equals(DateRange.UNKNOWN) ? that.dateEnd : that.dateStart;
+
+        if (thatDate.equals(DateRange.UNKNOWN)) {
+            return -1;
         }
-        if (d == 0 || this.dateStart.equals(DateRange.UNKNOWN))
-        {
-            d = this.dateEnd.compareTo(that.dateEnd);
+        if (thisDate.equals(DateRange.UNKNOWN)) {
+            return +1;
         }
-        return d;
+
+        return thisDate.compareTo(thatDate);
     }
 
     /**
