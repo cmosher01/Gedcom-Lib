@@ -92,7 +92,7 @@ public class Person implements Comparable<Person>
             sb.append(", ");
         }
         sb.append(givenName2);
-        return sb.toString();
+        return sb.toString().toUpperCase();
     }
 
     public void initKeyDates()
