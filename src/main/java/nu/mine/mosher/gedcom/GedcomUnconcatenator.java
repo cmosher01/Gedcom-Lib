@@ -69,7 +69,7 @@ class GedcomUnconcatenator {
 
     private boolean isSplitable(GedcomTag tag) {
         // TODO: not all TITLs are splitable, only SOUR.TITLs
-        return tag.equals(GedcomTag.NOTE) || tag.equals(GedcomTag.TEXT) || tag.equals(GedcomTag.AUTH) || tag.equals(GedcomTag.TITL) || tag.equals(GedcomTag.PUBL) || tag.equals(GedcomTag.COPR) || tag.equals(GedcomTag.DSCR);
+        return tag.equals(GedcomTag.NOTE) || tag.equals(GedcomTag.TEXT) || tag.equals(GedcomTag.AUTH) /*|| tag.equals(GedcomTag.TITL)*/ || tag.equals(GedcomTag.PUBL) || tag.equals(GedcomTag.COPR) || tag.equals(GedcomTag.DSCR);
     }
 
     private static void writeChild(TreeNode<GedcomLine> node, TreeNode<GedcomLine> existingFirstChild, TreeSet<GedcomLine> currLine, StringBuilder currValue, GedcomTag nextTag) {
