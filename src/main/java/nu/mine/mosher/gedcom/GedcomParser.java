@@ -72,7 +72,7 @@ class GedcomParser implements Iterable<GedcomLine>
         }
 
         /**
-		 * 
+		 *
 		 */
         public Iter()
         {
@@ -128,6 +128,10 @@ class GedcomParser implements Iterable<GedcomLine>
             while (s != null && s.trim().length() == 0)
             {
                 s = this.in.readLine();
+            }
+            if (s != null && s.codePointAt(0) == 0xfeff)
+            {
+                s = s.substring(1);
             }
             return s;
         }
