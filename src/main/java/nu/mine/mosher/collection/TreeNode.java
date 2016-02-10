@@ -162,6 +162,20 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
     }
 
     /**
+     * Removes all children from this node.
+     */
+    @SuppressWarnings("synthetic-access")
+    public void removeAllChildren()
+    {
+        for (final Iterator<TreeNode<T>> i = children(); i.hasNext();)
+        {
+            final TreeNode<T> child = i.next();
+            i.remove();
+            child.parent = null;
+        }
+    }
+
+    /**
      * Gets this node's parent, if any.
      * @return this node's parent, or <code>null</code> if this node has no
      *         parent.
