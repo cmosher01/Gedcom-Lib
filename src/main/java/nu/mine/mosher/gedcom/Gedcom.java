@@ -49,6 +49,14 @@ public final class Gedcom
         out.flush();
     }
 
+    public static void writeFile(GedcomTree gt, BufferedWriter out, final int maxLen) throws IOException
+    {
+        final GedcomUnconcatenator concat = new GedcomUnconcatenator(gt, maxLen);
+        concat.unconcatenate();
+        out.write(gt.toString());
+        out.flush();
+    }
+
     public static GedcomTree parseFile(File in, Charset charset) throws IOException,
             UnsupportedEncodingException, FileNotFoundException, InvalidLevel
     {
