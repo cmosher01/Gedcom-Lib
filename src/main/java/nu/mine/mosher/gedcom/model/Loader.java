@@ -231,7 +231,7 @@ public class Loader {
     }
 
     private Person parseIndividual(final TreeNode<GedcomLine> nodeIndi, final Map<String, Source> mapIDtoSource) {
-        String name = "[unknown]";
+        String name = "";
         UUID uuid = null;
         final ArrayList<Event> rEvent = new ArrayList<>();
         boolean isPrivate = false;
@@ -243,7 +243,9 @@ public class Loader {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
             if (tag.equals(GedcomTag.NAME)) {
-                name = parseName(node);
+                if (name.isEmpty()) {
+                    name = parseName(node);
+                }
             } else if (tag.equals(GedcomTag._UID)) {
                 try {
                     uuid = parseUuid(node);
@@ -260,6 +262,9 @@ public class Loader {
                     isPrivate = calculatePrivacy(event);
                 }
             }
+        }
+        if (name.isEmpty()) {
+            name = "[unknown]";
         }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
