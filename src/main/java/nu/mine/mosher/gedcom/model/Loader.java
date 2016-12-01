@@ -53,12 +53,13 @@ public class Loader {
         final Collection<TreeNode<GedcomLine>> rNodeTop = new ArrayList<>();
         getChildren(this.gedcom.getRoot(), rNodeTop);
 
+        String root = "";
         for (final TreeNode<GedcomLine> nodeTop : rNodeTop) {
             final GedcomLine lineTop = nodeTop.getObject();
             final GedcomTag tagTop = lineTop.getTag();
 
             if (tagTop.equals(GedcomTag.HEAD)) {
-                this.description = parseHead(nodeTop);
+                root = parseHead(nodeTop);
                 break;
             }
         }
@@ -88,7 +89,7 @@ public class Loader {
                 this.mapNodeToPerson.put(nodeTop, person);
                 mapIDtoPerson.put(person.getID(), person);
                 storeInUuidMap(person);
-                if (this.first == null) {
+                if (this.first == null || person.getID().equals(root)) {
                     this.first = person;
                 }
             }
@@ -178,18 +179,21 @@ public class Loader {
         }
     }
 
-    private static String parseHead(final TreeNode<GedcomLine> head) {
+    private String parseHead(final TreeNode<GedcomLine> head) {
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(head, rNode);
 
+        String root = "";
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
             if (tag.equals(GedcomTag.NOTE)) {
-                return line.getValue();
+                this.description = line.getValue();
+            } else if (line.getTagString().equals("_ROOT")) {
+                root = line.getPointer();
             }
         }
-        return "";
+        return root;
     }
 
     private Source parseSource(final TreeNode<GedcomLine> nodeSource) {
