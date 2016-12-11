@@ -243,7 +243,7 @@ public class Loader {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
             if (tag.equals(GedcomTag.NAME)) {
-                if (name.isEmpty()) {
+                if (name.isEmpty()) { // TODO process any additional NAME records
                     name = parseName(node);
                 }
             } else if (tag.equals(GedcomTag._UID)) {
@@ -258,7 +258,7 @@ public class Loader {
                 final Event event = parseEvent(node, mapIDtoSource);
                 this.mapNodeToEvent.put(node, event);
                 rEvent.add(event);
-                if (tag.equals(GedcomTag.BIRT)) {
+                if (tag.equals(GedcomTag.BIRT) && !isPrivate) {
                     isPrivate = calculatePrivacy(event);
                 }
             }
@@ -325,9 +325,7 @@ public class Loader {
         DatePeriod date = null;
         String place = "";
         String note = "";
-        Source source = null;
-        String citationPage = "";
-        String citationExtraText = "";
+        final ArrayList<Citation> citations = new ArrayList<>();
 
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
@@ -345,15 +343,20 @@ public class Loader {
             } else if (tag.equals(GedcomTag.PLAC)) {
                 place = line.getValue();
             } else if (tag.equals(GedcomTag.NOTE)) {
-                note = parseNote(node);
+                final String n = parseNote(node);
+                if (!note.isEmpty() && !n.isEmpty()) {
+                    note += "/n";
+                }
+                note += n;
             } else if (tag.equals(GedcomTag.SOUR)) {
-                citationPage = getSourcePtPage(node);
-                citationExtraText = getSourcePtText(node);
-                source = lookUpSource(node.getObject().getPointer(), mapIDtoSource);
+                final Source source = lookUpSource(node.getObject().getPointer(), mapIDtoSource);
+                final String citationPage = getSourcePtPage(node);
+                final String citationExtraText = getSourcePtText(node);
+                citations.add(new Citation(source, citationPage, citationExtraText));
             }
         }
         // TODO handle case of date == null
-        return new Event(whichEvent, date, place, note, source, citationPage, citationExtraText);
+        return new Event(whichEvent, date, place, note, citations);
     }
 
     private static String getSourcePtPage(TreeNode<GedcomLine> node) {

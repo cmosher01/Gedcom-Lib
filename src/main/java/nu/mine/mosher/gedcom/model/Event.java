@@ -2,6 +2,11 @@ package nu.mine.mosher.gedcom.model;
 
 import nu.mine.mosher.gedcom.date.DatePeriod;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 /*
  * Created on 2006-10-08.
  */
@@ -11,26 +16,15 @@ public class Event implements Comparable<Event>
 	private final DatePeriod date;
 	private final String place;
 	private final String note;
-	private final Source source;
-	private final String citationPage;
-	private final String citationExtraText;
+	private final List<Citation> citations;
 
-	/**
-	 * @param type
-	 * @param date
-	 * @param place
-	 * @param note
-	 * @param source
-	 */
-	public Event(final String type, final DatePeriod date, final String place, final String note, final Source source, final String citationPage, final String citationExtraText)
+	public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations)
 	{
 		this.type = type;
 		this.date = date;
 		this.place = place;
 		this.note = note;
-		this.source = source;
-		this.citationPage = citationPage;
-		this.citationExtraText = citationExtraText;
+		this.citations = Collections.unmodifiableList(new ArrayList<>(citations));
 	}
 
 	public String getType()
@@ -49,12 +43,7 @@ public class Event implements Comparable<Event>
 	{
 		return this.note;
 	}
-	public Source getSource()
-	{
-		return this.source;
-	}
-	public String getCitationPage() { return citationPage; }
-	public String getCitationExtraText() { return citationExtraText; }
+	public List<Citation> getCitations() { return this.citations; }
 
 	@Override
 	public int compareTo(final Event that)
