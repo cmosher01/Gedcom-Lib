@@ -154,7 +154,7 @@ public class Loader {
         }
         final Person existing = this.mapUUIDtoPerson.get(uuid);
         if (existing != null) {
-            System.err.println("Duplicate INDI _UID value: " + uuid);
+            System.err.println("Duplicate INDI UUID value: " + uuid);
             return;
         }
         this.mapUUIDtoPerson.put(uuid, person);
@@ -217,15 +217,12 @@ public class Loader {
                 publication = line.getValue();
             } else if (tag.equals(GedcomTag.TEXT)) {
                 text = line.getValue();
-            } else if (tag.equals(GedcomTag._UID)) {
-                try {
-                    uuid = parseUuid(n);
-                } catch (final Throwable e) {
-                    System.err.println("Error while parsing source \"" + title + "\"");
-                    e.printStackTrace();
-                    uuid = null;
-                }
+            } else if (uuid == null && hasUuidTag(line)) {
+                uuid = parseUuid(n);
             }
+        }
+        if (uuid == null) {
+            System.err.println("Cannot find REFN UUID for source \"" + title + "\"; will generate temporary UUID.");
         }
         return new Source(nodeSource.getObject().getID(), author, title, publication, text, uuid);
     }
@@ -246,14 +243,8 @@ public class Loader {
                 if (name.isEmpty()) { // TODO process any additional NAME records
                     name = parseName(node);
                 }
-            } else if (tag.equals(GedcomTag._UID)) {
-                try {
-                    uuid = parseUuid(node);
-                } catch (final Throwable e) {
-                    System.err.println("Error while parsing individual \"" + name + "\"");
-                    e.printStackTrace();
-                    uuid = null;
-                }
+            } else if (uuid == null && hasUuidTag(line)) {
+                uuid = parseUuid(node);
             } else if (GedcomTag.setIndividualEvent.contains(tag) || GedcomTag.setIndividualAttribute.contains(tag)) {
                 final Event event = parseEvent(node, mapIDtoSource);
                 this.mapNodeToEvent.put(node, event);
@@ -266,13 +257,29 @@ public class Loader {
         if (name.isEmpty()) {
             name = "[unknown]";
         }
+        if (uuid == null) {
+            System.err.println("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
+        }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
     }
 
+    private static boolean hasUuidTag(final GedcomLine line) {
+        if (line.getTag().equals(GedcomTag.REFN)) {
+            return true;
+        }
+        if (!line.getTag().equals(GedcomTag.UNKNOWN)) {
+            return false;
+        }
+        return line.getTagString().equals("_UID");
+    }
+
     private static UUID parseUuid(final TreeNode<GedcomLine> nodeUuid) {
-        final String rawUuid = nodeUuid.getObject().getValue();
-        return UUID.fromString(rawUuid);
+        try {
+            return UUID.fromString(nodeUuid.getObject().getValue());
+        } catch (final Throwable ignore) {
+            return null;
+        }
     }
 
     private void parseFamily(final TreeNode<GedcomLine> nodeFam, final Map<String, Person> mapIDtoPerson, final Map<String, Source> mapIDtoSource) {
