@@ -1,7 +1,9 @@
 package nu.mine.mosher.gedcom;
 
 
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import nu.mine.mosher.collection.TreeNode;
 
@@ -11,6 +13,9 @@ import nu.mine.mosher.collection.TreeNode;
  */
 class GedcomUnconcatenator {
     public static final int DEFAULT_MAX_LENGTH = 60;
+
+    private static final int KEEP_TRAILING_EMPTY_STRINGS = -999;
+    private static final Pattern LINEBREAK = Pattern.compile("\\R");
 
     private final GedcomTree tree;
     private final int maxLength;
@@ -31,67 +36,176 @@ class GedcomUnconcatenator {
     private void unconc(final TreeNode<GedcomLine> node) {
         node.forEach(this::unconc);
 
-        final TreeNode<GedcomLine> existingFirstChild = node.children().hasNext() ? node.children().next() : null;
-
         final GedcomLine gedcomLine = node.getObject();
-
-        if (gedcomLine != null) {
-            final String value = gedcomLine.getValue();
-            if (isSplitable(gedcomLine.getTag()) && needsWork(value)) {
-                final TreeSet<GedcomLine> currLine = new TreeSet<>();
-                currLine.add(new GedcomLine(gedcomLine.getLevel(), "@" + gedcomLine.getID() + "@", gedcomLine.getTag().name(), ""));
-                final StringBuilder currValue = new StringBuilder(this.maxLength);
-                // TODO: do not let line end with whitespace
-                /* TODO: new algorithm, something like this:
-                split by newline
-                for each line
-                  while len > max
-                    b = max-1
-                    while charAt b is whitespace and b > 0
-                      b--
-                    if b == 0, b = max
-                    remove b chars from front into new row
-                 */
-                value.codePoints().forEach(c -> {
-                    if (c == '\n') {
-                        writeChild(node, existingFirstChild, currLine, currValue, GedcomTag.CONT);
-                    } else if (currValue.length() >= this.maxLength) {
-                        writeChild(node, existingFirstChild, currLine, currValue, GedcomTag.CONC);
-                        currValue.appendCodePoint(c);
-                    } else {
-                        currValue.appendCodePoint(c);
-                    }
-                });
-                writeChild(node, existingFirstChild, currLine, currValue, GedcomTag.CONC);
-            }
+        if (gedcomLine != null && needsWork(gedcomLine)) {
+            final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
+            splitToContConc(gedcomLine.getValue(), this.maxLength, gedcomLine.getLevel() + 1, gedcomLinesToAdd);
+            addContConcChildren(gedcomLinesToAdd, node);
         }
     }
 
-    private boolean isSplitable(GedcomTag tag) {
-        // TODO: not all TITLs are splitable, only SOUR.TITLs
-        // TODO: ADDR allows CONT but not CONC
-        return tag.equals(GedcomTag.NOTE) || tag.equals(GedcomTag.TEXT) || tag.equals(GedcomTag.AUTH) /*|| tag.equals(GedcomTag.TITL)*/ || tag.equals(GedcomTag.PUBL) || tag.equals(GedcomTag.COPR) || tag.equals(GedcomTag.DSCR) | tag.equals(GedcomTag.ADDR);
-    }
-
-    private static void writeChild(TreeNode<GedcomLine> node, TreeNode<GedcomLine> existingFirstChild, TreeSet<GedcomLine> currLine, StringBuilder currValue, GedcomTag nextTag) {
-        final GedcomLine g = currLine.first();
-        final boolean alreadyOnChild = g.getTag().equals(GedcomTag.CONC) || g.getTag().equals(GedcomTag.CONT);
-        if (alreadyOnChild) {
-            if (existingFirstChild != null) {
-                node.addChildBefore(new TreeNode<>(new GedcomLine(g.getLevel(), "", g.getTag().name(), currValue.toString())), existingFirstChild);
+    private static void addContConcChildren(final List<GedcomLine> lines, final TreeNode<GedcomLine> node) {
+        final TreeNode<GedcomLine> insertionPoint = node.getFirstChildOrNull();
+        boolean first = true;
+        for (final GedcomLine gedcomLineToAdd : lines) {
+            if (first) {
+                first = false;
+                node.setObject(node.getObject().replaceValue(gedcomLineToAdd.getValue()));
             } else {
-                node.addChild(new TreeNode<>(new GedcomLine(g.getLevel(), "", g.getTag().name(), currValue.toString())));
+                node.addChildBefore(new TreeNode<>(gedcomLineToAdd), insertionPoint);
             }
-        } else {
-            node.setObject(new GedcomLine(g.getLevel(), "@" + g.getID() + "@", g.getTag().name(), currValue.toString()));
         }
-        final int level = alreadyOnChild ? g.getLevel() : g.getLevel() + 1;
-        currLine.clear();
-        currLine.add(new GedcomLine(level, "", nextTag.name(), ""));
-        currValue.setLength(0);
     }
 
-    private boolean needsWork(final String value) {
-        return value.length() > this.maxLength || value.contains("\n");
+    // TODO look at the whole line, not just the value, and make all final GEDCOM lines the same length
+
+    private boolean needsWork(final GedcomLine line) {
+        return line.getValue().length() > this.maxLength || LINEBREAK.matcher(line.getValue()).find();
+    }
+
+
+    /**
+     * Utility method to help with generating CONT/CONC lines for GEDCOM.
+     * Splits originalValue into lines, and splits each line into segments
+     * at most maxLen in size each.
+     * <p>
+     * The results are appended to gedcomLines. For example:
+     * <p>
+     * CONT line-0-segment0
+     * CONC line-0-segment1
+     * CONC line-0-segment2
+     * CONT line-1-segment0
+     * CONT line-2-segment0
+     * CONC line-2-segment1
+     * <p>
+     * Each level will be set to gedcomLevel.
+     * <p>
+     * When you use the resulting gedcomLines, you would typically use
+     * only the value from the first line and reset the existing node's
+     * value to it. Then append as (first-most) children the remaining
+     * gedcomLines to the exisring node;
+     *
+     * @param originalValue
+     * @param maxLen
+     * @param gedcomLevel
+     * @param gedcomLines
+     */
+    private static void splitToContConc(final String originalValue, final int maxLen, final int gedcomLevel, final List<GedcomLine> gedcomLines) {
+        for (final String line : LINEBREAK.split(originalValue, KEEP_TRAILING_EMPTY_STRINGS)) {
+            addLines(line, maxLen, gedcomLevel, gedcomLines);
+        }
+    }
+
+    private static void addLines(final String line, final int maxLen, final int gedcomLevel, final List<GedcomLine> gedcomLines) {
+        final List<String> segments = new ArrayList<>(8);
+        splitLineIntoSegments(line, maxLen, segments);
+        addSegments(segments, gedcomLevel, gedcomLines);
+    }
+
+    private static void addSegments(final List<String> segments, final int gedcomLevel, final List<GedcomLine> gedcomLines) {
+        GedcomTag tag = GedcomTag.CONT;
+        for (final String segment : segments) {
+            gedcomLines.add(new GedcomLine(gedcomLevel, "", tag.name(), segment));
+            tag = GedcomTag.CONC;
+        }
+    }
+
+    public static class Sanity {
+        private int sanity;
+
+        private Sanity(final int n) {
+            this.sanity = n;
+        }
+
+        public static Sanity create(final int n) {
+            return new Sanity(n);
+        }
+
+        public void check() {
+            --this.sanity;
+            assert this.sanity > 0;
+        }
+    }
+
+    public static void splitLineIntoSegments(final String line, final int maxLen, final List<String> segments) {
+        assert 0 < maxLen && maxLen < 100000;
+        assert segments != null;
+
+        // TODO: log WANRNING if splitLineIntoSegments is not empty upon entry
+
+        String s = line;
+
+        final Sanity sanity = Sanity.create(100000);
+        while (s.length() > maxLen) {
+            sanity.check();
+
+            final String[] lr = cut(s, findSplitPosition(s, maxLen));
+            segments.add(lr[0]);
+            s = lr[1];
+        }
+
+        if (!s.isEmpty()) {
+            segments.add(s);
+        }
+    }
+
+    /**
+     * Apply split rules in order of precedence to find the (first)
+     * position in the given line at which to break it.
+     *
+     * @param line
+     * @param maxLen
+     * @return
+     */
+    private static int findSplitPosition(final String line, int maxLen) {
+        int pos = 0;
+
+        if (pos <= 0) {
+            pos = breakOnWord(line, maxLen, true);
+        }
+        if (pos <= 0) {
+            pos = breakOnWord(line, maxLen, false);
+        }
+        if (pos <= 0) {
+            pos = maxLen;
+        }
+
+        return pos;
+    }
+
+    private static int breakOnWord(final String s, final int maxLen, final boolean within) {
+        int pos = maxLen;
+        final Sanity sanity = Sanity.create(100000);
+        while (pos > 0 && (spL(s, pos) || (within && spR(s, pos)))) {
+            sanity.check();
+            --pos;
+        }
+        return pos;
+    }
+
+    /**
+     * Is there a space to the Left of pos in String s?
+     *
+     * @param s
+     * @param pos
+     * @return
+     */
+    private static boolean spL(final String s, final int pos) {
+        return Character.isWhitespace(s.codePointBefore(pos));
+    }
+
+    /**
+     * Is there a space to the Right of pos in String s?
+     *
+     * @param s
+     * @param pos
+     * @return
+     */
+    private static boolean spR(final String s, final int pos) {
+        return Character.isWhitespace(s.codePointAt(pos));
+    }
+
+    private static String[] cut(final String s, final int at) {
+        return new String[]{s.substring(0, at), s.substring(at)};
     }
 }

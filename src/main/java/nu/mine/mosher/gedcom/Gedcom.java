@@ -37,7 +37,7 @@ public final class Gedcom
 //        loader.parse();
 
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileDescriptor.out), charset));
-        writeFile(gt, out);
+        writeFile(gt, out, 100);
         out.close();
     }
 

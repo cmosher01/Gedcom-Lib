@@ -65,6 +65,9 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
 
     public ListIterator<TreeNode<T>> childrenList() { return this.children.listIterator(); }
 
+    public TreeNode<T> getFirstChildOrNull() {
+        return children().hasNext() ? children().next() : null;
+    }
     /**
      * Gets the count of (immediate) children of this node.
      * @return the count of immediate children
@@ -81,23 +84,19 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
      */
     public void addChild(final TreeNode<T> child)
     {
-        if (child.parent != null)
-        {
-            child.removeFromParent();
-        }
-
-        this.children.add(child);
-        child.parent = this;
+        addChildBefore(child, null);
     }
 
-    public void addChildBefore(final TreeNode<T> child, final TreeNode<T> before)
-    {
-        if (child.parent != null)
-        {
+    public void addChildBefore(final TreeNode<T> child, final TreeNode<T> before) {
+        if (child.parent != null) {
             child.removeFromParent();
         }
 
-        this.children.add(this.children.indexOf(before), child);
+        if (before == null) {
+            this.children.add(child);
+        } else {
+            this.children.add(this.children.indexOf(before), child);
+        }
         child.parent = this;
     }
 

@@ -67,18 +67,16 @@ public class GedcomLine implements Comparable<GedcomLine>
         }
     }
 
-    private static String getPointer(final String s)
-    {
-        if (!s.startsWith("@") || !s.endsWith("@") || s.length() < 3)
-        {
+    private static String getPointer(final String s) {
+        if (s.contains("@@") || !s.startsWith("@") || !s.endsWith("@") || s.length() < 3) {
             return "";
         }
 
         final String pointer = s.substring(1, s.length() - 1);
-        if (pointer.indexOf('@') >= 0)
-        {
+        if (pointer.indexOf('@') >= 0) {
             return "";
         }
+
         return pointer;
     }
 
@@ -89,6 +87,10 @@ public class GedcomLine implements Comparable<GedcomLine>
     private static String restoreAts(final String s)
     {
         return s.replaceAll("@", "@@");
+    }
+
+    public GedcomLine replaceValue(final String newValue) {
+        return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
     }
 
     @Override
