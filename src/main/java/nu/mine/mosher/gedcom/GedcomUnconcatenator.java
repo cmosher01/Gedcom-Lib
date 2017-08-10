@@ -29,40 +29,18 @@ class GedcomUnconcatenator {
         this.maxLength = maxLength;
     }
 
-    public void unconcatenate() {
-        unconc(this.tree.getRoot());
-    }
-
-    private void unconc(final TreeNode<GedcomLine> node) {
-        node.forEach(this::unconc);
-
-        final GedcomLine gedcomLine = node.getObject();
-        if (gedcomLine != null && needsWork(gedcomLine)) {
-            final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
-            splitToContConc(gedcomLine.getValue(), this.maxLength, gedcomLine.getLevel() + 1, gedcomLinesToAdd);
-            addContConcChildren(gedcomLinesToAdd, node);
-        }
-    }
-
     private static void addContConcChildren(final List<GedcomLine> lines, final TreeNode<GedcomLine> node) {
         final TreeNode<GedcomLine> insertionPoint = node.getFirstChildOrNull();
         boolean first = true;
-        for (final GedcomLine gedcomLineToAdd : lines) {
+        for (final GedcomLine line : lines) {
             if (first) {
                 first = false;
-                node.setObject(node.getObject().replaceValue(gedcomLineToAdd.getValue()));
+                node.setObject(node.getObject().replaceValue(line.getValue()));
             } else {
-                node.addChildBefore(new TreeNode<>(gedcomLineToAdd), insertionPoint);
+                node.addChildBefore(new TreeNode<>(line), insertionPoint);
             }
         }
     }
-
-    // TODO look at the whole line, not just the value, and make all final GEDCOM lines the same length
-
-    private boolean needsWork(final GedcomLine line) {
-        return line.getValue().length() > this.maxLength || LINEBREAK.matcher(line.getValue()).find();
-    }
-
 
     /**
      * Utility method to help with generating CONT/CONC lines for GEDCOM.
@@ -84,6 +62,8 @@ class GedcomUnconcatenator {
      * only the value from the first line and reset the existing node's
      * value to it. Then append as (first-most) children the remaining
      * gedcomLines to the exisring node;
+     *
+     * TODO look at the whole line, not just the value, and make all final GEDCOM lines the same length
      *
      * @param originalValue
      * @param maxLen
@@ -110,28 +90,11 @@ class GedcomUnconcatenator {
         }
     }
 
-    public static class Sanity {
-        private int sanity;
-
-        private Sanity(final int n) {
-            this.sanity = n;
-        }
-
-        public static Sanity create(final int n) {
-            return new Sanity(n);
-        }
-
-        public void check() {
-            --this.sanity;
-            assert this.sanity > 0;
-        }
-    }
-
     public static void splitLineIntoSegments(final String line, final int maxLen, final List<String> segments) {
         assert 0 < maxLen && maxLen < 100000;
         assert segments != null;
 
-        // TODO: log WANRNING if splitLineIntoSegments is not empty upon entry
+        // TODO: log WARNING if segments is not empty upon entry
 
         String s = line;
 
@@ -167,6 +130,7 @@ class GedcomUnconcatenator {
             pos = breakOnWord(line, maxLen, false);
         }
         if (pos <= 0) {
+            // TODO is it worth logging this case?
             pos = maxLen;
         }
 
@@ -207,5 +171,44 @@ class GedcomUnconcatenator {
 
     private static String[] cut(final String s, final int at) {
         return new String[]{s.substring(0, at), s.substring(at)};
+    }
+
+    public void unconcatenate() {
+        unconcDeep(this.tree.getRoot());
+    }
+
+    private void unconcDeep(final TreeNode<GedcomLine> node) {
+        node.forEach(this::unconcDeep);
+        unconc(node);
+    }
+
+    private void unconc(final TreeNode<GedcomLine> node) {
+        final GedcomLine gedcomLine = node.getObject();
+        if (needsWork(gedcomLine)) {
+            final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
+            splitToContConc(gedcomLine.getValue(), this.maxLength, gedcomLine.getLevel() + 1, gedcomLinesToAdd);
+            addContConcChildren(gedcomLinesToAdd, node);
+        }
+    }
+
+    private boolean needsWork(final GedcomLine line) {
+        return (line != null)  && (line.getValue().length() > this.maxLength || LINEBREAK.matcher(line.getValue()).find());
+    }
+
+    public static class Sanity {
+        private int sanity;
+
+        private Sanity(final int n) {
+            this.sanity = n;
+        }
+
+        public static Sanity create(final int n) {
+            return new Sanity(n);
+        }
+
+        public void check() {
+            --this.sanity;
+            assert this.sanity > 0;
+        }
     }
 }
