@@ -2,13 +2,15 @@ plugins {
     id 'ca.coglinc.javacc' version '2.2.0'
     id 'org.asciidoctor.gradle.asciidoctor' version '1.5.1'
     id 'org.asciidoctor.convert' version '1.5.2'
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
 
 
 repositories {
+    mavenCentral()
     maven {
-        url 'http://mosher.mine.nu/nexus/content/groups/public'
+        url 'http://mosher.mine.nu/maven'
     }
 }
 
@@ -22,8 +24,13 @@ idea {
 }
 
 apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
+    compile group: 'com.ibm.icu', name: 'icu4j', version: 'latest.release'
+    compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: 'latest.release'
+
     testCompile group: 'junit', name: 'junit', version: 'latest.release'
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: 'latest.release'
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: 'latest.integration'
@@ -55,3 +62,4 @@ apply plugin: 'maven'
 
 group = 'nu.mine.mosher.gedcom'
 version = '1.0.1-SNAPSHOT'
+mainClassName = 'nu.mine.mosher.gedcom.Gedcom'
