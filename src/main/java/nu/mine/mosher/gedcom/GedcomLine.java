@@ -93,6 +93,26 @@ public class GedcomLine implements Comparable<GedcomLine>
         return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
     }
 
+    public static GedcomLine createEmpty(final int level, final GedcomTag tag) {
+        return new GedcomLine(level, "", tag.name(), "");
+    }
+
+    public static GedcomLine createEmptyId(final int level, final String idWithoutAts, final GedcomTag tag) {
+        return new GedcomLine(level, "@"+idWithoutAts+"@", tag.name(), "");
+    }
+
+    public static GedcomLine create(final int level, final GedcomTag tag, final String valueWithDoubledAts) {
+        return new GedcomLine(level, "", tag.name(), valueWithDoubledAts);
+    }
+
+    public static GedcomLine createId(final int level, final String idWithoutAts, final GedcomTag tag, final String valueWithDoubledAts) {
+        return new GedcomLine(level, "@"+idWithoutAts+"@", tag.name(), valueWithDoubledAts);
+    }
+
+    public static GedcomLine createPointer(final int level, final GedcomTag tag, final String ptrWithoutAts) {
+        return new GedcomLine(level, "", tag.name(), "@"+ptrWithoutAts+"@");
+    }
+
     @Override
     public String toString()
     {
