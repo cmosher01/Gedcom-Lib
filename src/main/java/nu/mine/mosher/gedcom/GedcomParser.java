@@ -4,6 +4,7 @@ package nu.mine.mosher.gedcom;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -13,6 +14,8 @@ import nu.mine.mosher.gedcom.exception.IllegalLevel;
 import nu.mine.mosher.gedcom.exception.InvalidID;
 import nu.mine.mosher.gedcom.exception.MissingTag;
 
+import static java.text.Normalizer.Form.NFD;
+import static java.text.Normalizer.normalize;
 
 
 /**
@@ -117,7 +120,7 @@ class GedcomParser implements Iterable<GedcomLine>
             return null;
         }
 
-        return parseLine(sLine);
+        return parseLine(normalize(sLine, NFD));
     }
 
     private String getNextNonblankLine() throws GedcomParseException
