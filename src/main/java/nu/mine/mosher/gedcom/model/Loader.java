@@ -222,7 +222,7 @@ public class Loader {
             }
         }
         if (uuid == null) {
-            System.err.println("Cannot find REFN UUID for source \"" + title + "\"; will generate temporary UUID.");
+            //System.err.println("Cannot find REFN UUID for source \"" + title + "\"; will generate temporary UUID.");
         }
         return new Source(nodeSource.getObject().getID(), author, title, publication, text, uuid);
     }
@@ -258,7 +258,7 @@ public class Loader {
             name = "[unknown]";
         }
         if (uuid == null) {
-            System.err.println("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
+            //System.err.println("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
         }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
