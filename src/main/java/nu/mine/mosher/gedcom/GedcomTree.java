@@ -3,8 +3,8 @@ package nu.mine.mosher.gedcom;
 
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.*;
 
 import nu.mine.mosher.collection.TreeNode;
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
@@ -18,6 +18,8 @@ import nu.mine.mosher.gedcom.exception.InvalidLevel;
  */
 public class GedcomTree
 {
+    private Charset charset = null;
+    private int maxLength = 0;
     private final TreeNode<GedcomLine> root;
     private final Map<String, TreeNode<GedcomLine>> mapIDtoNode = new HashMap<>();
 
@@ -34,6 +36,43 @@ public class GedcomTree
         this.prevLevel = -1;
     }
 
+    public Charset getCharset() {
+        return this.charset;
+    }
+
+    private static final Map<Charset, String> mapCharsetToGedcom = Collections.unmodifiableMap(new HashMap<Charset, String>() {{
+        put(Charset.forName("UTF-8"), "UTF-8");
+        put(Charset.forName("UTF-16"), "UTF-16");
+        put(Charset.forName("x-gedcom-ansel"), "ANSEL");
+        put(Charset.forName("US-ASCII"), "ASCII");
+    }});
+
+    public void setCharset(final Charset charset) {
+        boolean first = (this.charset == null);
+        if (!first) {
+            if (!mapCharsetToGedcom.containsKey(charset)) {
+                throw new IllegalStateException("Cannot convert to encoding "+charset.name());
+            }
+            for (final TreeNode<GedcomLine> r : this.root) {
+                if (r.getObject().getTag().equals(GedcomTag.HEAD)) {
+                    for (final TreeNode<GedcomLine> c : r) {
+                        if (c.getObject().getTag().equals(GedcomTag.CHAR)) {
+                            c.setObject(c.getObject().replaceValue(mapCharsetToGedcom.get(charset)));
+                        }
+                    }
+                }
+            }
+        }
+        this.charset = charset;
+    }
+
+    void setMaxLength(final int maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    public int getMaxLength() {
+        return this.maxLength;
+    }
     /**
      * Appends a <code>GedcomLine</code> to this tree. This method must be
      * called in the same sequence that GEDCOM lines appear in the file.
