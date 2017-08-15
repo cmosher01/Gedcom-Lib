@@ -1,66 +1,69 @@
 package nu.mine.mosher.gedcom;
 
 
+import nu.mine.mosher.collection.TreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import nu.mine.mosher.collection.TreeNode;
-
+import java.util.logging.Logger;
 
 
 /**
  * Handles CONT and CONC tags in a given <code>GedcomTree</code> by appending
  * their values to the previous <code>GedcomLine</code>.
+ *
  * @author Chris Mosher
  */
-class GedcomConcatenator
-{
+class GedcomConcatenator {
+    private static final Logger log = Logger.getLogger("");
+
     private final GedcomTree tree;
+    private int maxLength = 0;
 
     /**
      * @param tree
      */
-    public GedcomConcatenator(final GedcomTree tree)
-    {
+    public GedcomConcatenator(final GedcomTree tree) {
         this.tree = tree;
     }
 
-    /**
-	 *
-	 */
-    public void concatenate()
-    {
+    public void concatenate() {
         concatenateHelper(this.tree.getRoot());
+
+        if (this.maxLength < 1) {
+            log.info("Did not detect any CONC or CONT lines in this file.");
+            this.maxLength = GedcomUnconcatenator.DEFAULT_MAX_LENGTH;
+        }
+
+        tree.setMaxLength(this.maxLength);
+        log.info("Detected maximum length for CONC/CONT line breaking of: " + Integer.toString(this.maxLength));
     }
 
-    private static void concatenateHelper(final TreeNode<GedcomLine> nodeParent)
-    {
+    private void concatenateHelper(final TreeNode<GedcomLine> nodeParent) {
         final List<TreeNode<GedcomLine>> rToBeRemoved = new ArrayList<>();
 
-        for (final TreeNode<GedcomLine> nodeChild : nodeParent)
-        {
-            // TODO: remove recursion
+        for (final TreeNode<GedcomLine> nodeChild : nodeParent) {
             concatenateHelper(nodeChild);
 
             final GedcomLine lineChild = nodeChild.getObject();
 
             final GedcomTag tag = lineChild.getTag();
 
-            switch (tag)
-            {
-                case CONT:
-                {
-                    nodeParent.setObject(nodeParent.getObject().contValue(
-                        lineChild.getValue()));
+            switch (tag) {
+                case CONT: {
+                    if (this.maxLength < lineChild.getValue().length()) {
+                        this.maxLength = lineChild.getValue().length();
+                    }
+                    nodeParent.setObject(nodeParent.getObject().contValue(lineChild.getValue()));
                     rToBeRemoved.add(nodeChild);
                 }
                 break;
 
-                case CONC:
-                {
-                    nodeParent.setObject(nodeParent.getObject().concValue(
-                        lineChild.getValue()));
+                case CONC: {
+                    if (this.maxLength < lineChild.getValue().length()) {
+                        this.maxLength = lineChild.getValue().length();
+                    }
+                    nodeParent.setObject(nodeParent.getObject().concValue(lineChild.getValue()));
                     rToBeRemoved.add(nodeChild);
                 }
                 break;
