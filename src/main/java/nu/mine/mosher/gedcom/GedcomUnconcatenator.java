@@ -17,17 +17,44 @@ class GedcomUnconcatenator {
     private static final int KEEP_TRAILING_EMPTY_STRINGS = -999;
     private static final Pattern LINEBREAK = Pattern.compile("\\R");
 
+
+
     private final GedcomTree tree;
-    private final int maxLength;
+
+
 
     public GedcomUnconcatenator(final GedcomTree tree) {
-        this(tree, DEFAULT_MAX_LENGTH);
+        this.tree = tree;
     }
 
-    public GedcomUnconcatenator(final GedcomTree tree, final int maxLength) {
-        this.tree = tree;
-        this.maxLength = maxLength;
+    public void unconcatenate() {
+        unconcDeep(this.tree.getRoot());
     }
+
+
+
+    private void unconcDeep(final TreeNode<GedcomLine> node) {
+        node.forEach(this::unconcDeep);
+        unconc(node);
+    }
+
+    private void unconc(final TreeNode<GedcomLine> node) {
+        final GedcomLine gedcomLine = node.getObject();
+        if (needsWork(gedcomLine)) {
+            final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
+            splitToContConc(gedcomLine.getValue(), this.tree.getMaxLength(), gedcomLine.getLevel() + 1, gedcomLinesToAdd);
+            addContConcChildren(gedcomLinesToAdd, node);
+        }
+    }
+
+    private boolean needsWork(final GedcomLine line) {
+        return (line != null)  && (line.getValue().length() > this.tree.getMaxLength() || LINEBREAK.matcher(line.getValue()).find());
+    }
+
+
+
+
+
 
     private static void addContConcChildren(final List<GedcomLine> lines, final TreeNode<GedcomLine> node) {
         final TreeNode<GedcomLine> insertionPoint = node.getFirstChildOrNull();
@@ -116,6 +143,16 @@ class GedcomUnconcatenator {
      * Apply split rules in order of precedence to find the (first)
      * position in the given line at which to break it.
      *
+     * The three algorithms are as follows, in order of precedence:
+     * 1. break within a word (leaving no whitespace on either the
+     *    end of the first line or the beginning of the second line),
+     *
+     * 2. break at the end of a word (leaving no whitespace on the
+     *    end of the first line, but whitespace on the beginning of
+     *    the second line), or
+     *
+     * 3. break at maxLength, regardless of whitespace.
+     *
      * @param line
      * @param maxLen
      * @return
@@ -173,28 +210,11 @@ class GedcomUnconcatenator {
         return new String[]{s.substring(0, at), s.substring(at)};
     }
 
-    public void unconcatenate() {
-        unconcDeep(this.tree.getRoot());
-    }
 
-    private void unconcDeep(final TreeNode<GedcomLine> node) {
-        node.forEach(this::unconcDeep);
-        unconc(node);
-    }
-
-    private void unconc(final TreeNode<GedcomLine> node) {
-        final GedcomLine gedcomLine = node.getObject();
-        if (needsWork(gedcomLine)) {
-            final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
-            splitToContConc(gedcomLine.getValue(), this.maxLength, gedcomLine.getLevel() + 1, gedcomLinesToAdd);
-            addContConcChildren(gedcomLinesToAdd, node);
-        }
-    }
-
-    private boolean needsWork(final GedcomLine line) {
-        return (line != null)  && (line.getValue().length() > this.maxLength || LINEBREAK.matcher(line.getValue()).find());
-    }
-
+    /**
+     * Simple utility class to aid in preventing infinite
+     * loops, just to be extra cautious.
+     */
     public static class Sanity {
         private int sanity;
 
@@ -209,6 +229,9 @@ class GedcomUnconcatenator {
         public void check() {
             --this.sanity;
             assert this.sanity > 0;
+            if (!(this.sanity > 0)) {
+                throw new IllegalStateException("Possible infinte loop detected, and aborted.");
+            }
         }
     }
 }
