@@ -8,6 +8,7 @@ plugins {
 
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url 'http://mosher.mine.nu/maven'
@@ -43,12 +44,6 @@ sourceSets {
     }
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'nu.mine.mosher.gedcom.Gedcom'
-    }
-}
-
 
 apply plugin: 'org.asciidoctor.convert'
 
@@ -58,7 +53,18 @@ asciidoctor {
 
 
 
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
 
 group = 'nu.mine.mosher.gedcom'
 version = '1.0.1-SNAPSHOT'

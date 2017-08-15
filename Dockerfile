@@ -31,7 +31,7 @@ COPY build.gradle ./
 COPY src/ ./src/
 
 RUN mkdir -p ./build/reports/logs/
-RUN ./gradlew build javadoc asciidoc install 2>&1 | tee ./build/reports/logs/build.log
+RUN ./gradlew -i build javadoc asciidoc publishToMavenLocal 2>&1 | tee ./build/reports/logs/build.log
 
 RUN ln -s /root/.m2/repository ./build/asciidoc/html5/maven
 RUN ln -s . ./build/asciidoc/html5/gedcom-lib
