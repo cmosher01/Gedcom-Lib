@@ -31,8 +31,8 @@ class GedcomConcatenator {
         concatenateHelper(this.tree.getRoot());
 
         if (this.maxLength < 1) {
-            log.info("Did not detect any CONC or CONT lines in this file.");
             this.maxLength = GedcomUnconcatenator.DEFAULT_MAX_LENGTH;
+            log.info("Did not detect any CONC or CONT lines in this file; defaulting to "+this.maxLength);
         }
 
         tree.setMaxLength(this.maxLength);
