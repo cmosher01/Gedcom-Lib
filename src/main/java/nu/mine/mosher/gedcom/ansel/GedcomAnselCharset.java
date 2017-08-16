@@ -8,7 +8,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static nu.mine.mosher.gedcom.ansel.AnselCharacterMap.map;
 
@@ -55,22 +54,28 @@ public class GedcomAnselCharset extends Charset {
                 while (in.hasRemaining() && out.position() < out.limit()) {
                     final int bint = getChar(in);
 
-                    char c;
+                    char c = 0;
                     this.combining = false;
+                    boolean drop = false;
                     if (map.containsKey(bint)) {
                         final int mappedUni = map.get(bint);
-                        c = (char) mappedUni;
+                        if (mappedUni < 0) {
+                            drop = true;
+                        } else {
+                            c = (char) mappedUni;
 
-                        if (c != 0 && bint >= 0xe0) // ANSEL standard: any char E0-FF is combining (with *following* char)
-                        {
-                            this.listCombining.add((int) c);
-                            this.combining = true;
+                            if (c != 0 && bint >= 0xe0) // ANSEL standard: any char E0-FF is combining (with *following* char)
+                            {
+                                this.listCombining.add((int) c);
+                                this.combining = true;
+                            }
                         }
                     } else {
+                        // TODO this allows some illegal characters thru
                         c = (char) bint;
                         c &= 0xff;
                     }
-                    if (!this.combining) {
+                    if (!this.combining && !drop) {
                         if (c != 0) {
                             out.put(c);
                         }
