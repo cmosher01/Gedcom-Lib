@@ -20,11 +20,13 @@ class GedcomUnconcatenator {
 
 
     private final GedcomTree tree;
-
+    private final int maxLength;
 
 
     public GedcomUnconcatenator(final GedcomTree tree) {
         this.tree = tree;
+        int m = tree.getMaxLength();
+        this.maxLength = m != 0 ? m : DEFAULT_MAX_LENGTH;
     }
 
     public void unconcatenate() {
@@ -42,13 +44,13 @@ class GedcomUnconcatenator {
         final GedcomLine gedcomLine = node.getObject();
         if (needsWork(gedcomLine)) {
             final List<GedcomLine> gedcomLinesToAdd = new ArrayList<>(8);
-            splitToContConc(gedcomLine.getValue(), this.tree.getMaxLength(), gedcomLine.getLevel() + 1, gedcomLinesToAdd);
+            splitToContConc(gedcomLine.getValue(), this.maxLength, gedcomLine.getLevel() + 1, gedcomLinesToAdd);
             addContConcChildren(gedcomLinesToAdd, node);
         }
     }
 
     private boolean needsWork(final GedcomLine line) {
-        return (line != null)  && (line.getValue().length() > this.tree.getMaxLength() || LINEBREAK.matcher(line.getValue()).find());
+        return (line != null)  && (line.getValue().length() > this.maxLength || LINEBREAK.matcher(line.getValue()).find());
     }
 
 
