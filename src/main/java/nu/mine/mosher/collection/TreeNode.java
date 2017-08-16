@@ -5,6 +5,8 @@ package nu.mine.mosher.collection;
 import java.io.IOException;
 import java.util.*;
 
+import static nu.mine.mosher.logging.Jul.log;
+
 
 /**
  * Represents a node in a tree, and the (sub-)tree rooted at that node.
@@ -254,7 +256,12 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
 
         if (this.object != null)
         {
-            appendTo.append(this.object.toString());
+            final String line = this.object.toString();
+            if (line.endsWith(" ")) {
+                log().warning("Line ends with whitespace; some systems may erroneously truncate it:");
+                log().warning(line+"|");
+            }
+            appendTo.append(line);
             appendTo.append("\n");
         }
 
