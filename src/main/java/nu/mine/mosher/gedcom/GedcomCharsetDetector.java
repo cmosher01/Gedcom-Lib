@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static nu.mine.mosher.logging.Jul.log;
+
 public class GedcomCharsetDetector {
     private static final Logger log = Logger.getLogger("");
 
@@ -23,6 +25,8 @@ public class GedcomCharsetDetector {
     }
 
     public Charset detect() throws IOException {
+        checkMagicBytes(this.gedcom);
+
         String use = "windows-1252";
 
         final String headChar = findHeadCharValue(this.gedcom);
@@ -84,7 +88,7 @@ public class GedcomCharsetDetector {
 
             final int confidenceThreshold;
             if (icu4jDetectable.contains(interpretedDeclaredEncoding)) {
-                confidenceThreshold = 33;
+                confidenceThreshold = 52;
             } else {
                 confidenceThreshold = 98;
             }
@@ -96,6 +100,10 @@ public class GedcomCharsetDetector {
             }
         }
 
+        if (!isLegalJavaCharset(use)) {
+            use = "UTF-8";
+        }
+
         final Charset deduced = Charset.forName(use);
         log.info("Using charset " + deduced.name());
         return deduced;
@@ -105,6 +113,7 @@ public class GedcomCharsetDetector {
         try {
             return Charset.isSupported(possbileCharSetName);
         } catch (final Throwable ignored) {
+            log().warning("Cannot find character encoding ("+possbileCharSetName+") to use for GEDCOM file.");
             return false;
         }
     }
@@ -260,7 +269,8 @@ public class GedcomCharsetDetector {
 
 
 
-    private static final Charset DUMB_GUESS_UNIVERSAL_CHARSET = Charset.forName("windows-1252");
+    private static final String DUMB_GUESS_UNIVERSAL_CHARSET_NAME = "windows-1252";
+    private static final Charset DUMB_GUESS_UNIVERSAL_CHARSET = Charset.forName(DUMB_GUESS_UNIVERSAL_CHARSET_NAME);
     private static final Pattern HEAD_LINE = Pattern.compile("0\\s+HEAD.*");
     private static final Pattern CHAR_LINE = Pattern.compile("1\\s+CHAR\\s+(.*)");
     private static final Pattern REC_LINE = Pattern.compile("0\\s+.*");
@@ -301,6 +311,23 @@ public class GedcomCharsetDetector {
                 }
             }
             return "";
+        } finally {
+            buf.reset();
+        }
+    }
+
+    private static void checkMagicBytes(final BufferedInputStream buf) throws IOException {
+        buf.mark(1 << 24);
+        try {
+            boolean ok = false;
+            final byte[] rb = new byte[7];
+            if (buf.read(rb,0,7) >= 7) {
+                ok = rb[0] == '0' && rb[1] == ' ' && rb[2] == 'H' && rb[3] == 'E' && rb[4] == 'A' && rb[5] == 'D' &&
+                    (rb[6] == '\n' || rb[6] == '\r');
+            }
+            if (!ok) {
+                log().severe("Input file does not start with 0 HEAD line, and therefore probably is not a GEDCOM file.");
+            }
         } finally {
             buf.reset();
         }
