@@ -18,8 +18,7 @@ public class GedcomOptions {
 
     public GedcomOptions(final OptionParser parser) {
         this.parser = parser;
-        this.parser.acceptsAll(asList("h", "help"), "Prints this help message.")
-            .forHelp();
+        this.parser.acceptsAll(asList("h", "help"), "Prints this help message.").forHelp();
 
         this.parser.acceptsAll(asList("v", "verbose"), "Show verbose informational messages.");
 
@@ -27,18 +26,12 @@ public class GedcomOptions {
 
         this.parser.acceptsAll(asList("u", "utf8"), "Converts output to UTF-8 encoding. RECOMMENDED.");
 
-        this.encoding = this.parser.acceptsAll(asList("e", "encoding"),
-            "Forces input encoding to be ENC; do not detect it.")
-            .withRequiredArg()
-            .ofType(CharSetArg.class)
-            .describedAs("ENC")
-            .defaultsTo(new CharSetArg());
+        this.encoding = this.parser
+            .acceptsAll(asList("e", "encoding"), "Forces input encoding to be ENC; do not detect it.").withOptionalArg()
+            .ofType(CharSetArg.class).describedAs("ENC").defaultsTo(new CharSetArg());
 
-        this.conc = this.parser.acceptsAll(asList("c", "conc"), "Rebuilds CONC/CONT lines to WIDTH")
-            .withOptionalArg()
-            .ofType(Integer.class)
-            .describedAs("WIDTH")
-            .withValuesConvertedBy(new ValueConverter<Integer>() {
+        this.conc = this.parser.acceptsAll(asList("c", "conc"), "Rebuilds CONC/CONT lines to WIDTH").withOptionalArg()
+            .ofType(Integer.class).describedAs("WIDTH").withValuesConvertedBy(new ValueConverter<Integer>() {
                 @Override
                 public Integer convert(String value) throws OptionException {
                     int w = Integer.parseInt(value, 10);
@@ -86,8 +79,7 @@ public class GedcomOptions {
     // special case for user-defined type-safe argument,
     // with default value only if option is specified
     public Charset encoding() {
-        return this.options.has("encoding") ? this.encoding.value(this.options)
-            .getCharset() : null;
+        return this.options.has("encoding") ? this.encoding.value(this.options).getCharset() : null;
     }
 
     public Integer concWidth() {
