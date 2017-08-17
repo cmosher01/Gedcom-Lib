@@ -58,11 +58,15 @@ public final class Jul {
         }
 
         Jul.initialized = true;
-        handlers().forEach(h -> h.setFormatter(new Formatter()));
+        handlers().forEach(Formatter::adorn);
         verbose(false);
     }
 
     private static class Formatter extends java.util.logging.Formatter {
+        private static void adorn(final Handler h) {
+            h.setFormatter(new Formatter());
+        }
+
         @Override
         public String format(final LogRecord r) {
             return String.format(FORMAT_LOG, ts(r.getMillis()), r.getLevel(), r.getMessage(), thr(r.getThrown()));
@@ -75,14 +79,10 @@ public final class Jul {
         }
 
         private String thr(final Throwable t) {
-            if (t == null) {
-                return "";
-            }
             final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            pw.flush();
-            pw.close();
+            if (t != null) {
+                t.printStackTrace(new PrintWriter(sw, true));
+            }
             return sw.toString();
         }
     }
