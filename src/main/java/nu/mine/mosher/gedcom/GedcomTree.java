@@ -4,6 +4,8 @@ package nu.mine.mosher.gedcom;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import nu.mine.mosher.collection.TreeNode;
@@ -164,5 +166,42 @@ public class GedcomTree
     public TreeNode<GedcomLine> getRoot()
     {
         return this.root;
+    }
+
+    private static final String formDate = "dd MMM yyyy";
+    private static final String formTime = "HH:mm:ss";
+
+    public void timestamp() {
+        final Date now = new Date();
+
+        final DateFormat dfDate = new SimpleDateFormat(formDate);
+        dfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final String date = dfDate.format(now).toUpperCase();
+
+        final DateFormat dfTime = new SimpleDateFormat(formTime);
+        dfTime.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final String time = dfTime.format(now);
+
+        for (final TreeNode<GedcomLine> head : this.root) {
+            if (head.getObject().getTag().equals(GedcomTag.HEAD)) {
+                addOrUpdateChild(head,GedcomTag.DATE, date);
+                for (final TreeNode<GedcomLine> d : head) {
+                    if (d.getObject().getTag().equals(GedcomTag.DATE)) {
+                        addOrUpdateChild(d, GedcomTag.TIME, time);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void addOrUpdateChild(final TreeNode<GedcomLine> nodeParent, final GedcomTag tagChild, final String valChild) {
+        for (final TreeNode<GedcomLine> nodeChild : nodeParent) {
+            final GedcomLine lineChild = nodeChild.getObject();
+            if (lineChild.getTag().equals(tagChild)) {
+                nodeChild.setObject(lineChild.replaceValue(valChild));
+                return;
+            }
+        }
+        nodeParent.addChild(new TreeNode<>(GedcomLine.create(nodeParent.getObject().getLevel()+1, tagChild, valChild)));
     }
 }
