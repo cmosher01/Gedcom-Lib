@@ -1,110 +1,101 @@
 package nu.mine.mosher.gedcom;
 
-import joptsimple.*;
+import nu.mine.mosher.logging.Jul;
+import nu.mine.mosher.mopper.Optional;
 
 import java.nio.charset.Charset;
 
-import static java.util.Arrays.asList;
+import static nu.mine.mosher.logging.Jul.log;
 
 public class GedcomOptions {
-    private final OptionParser parser;
-    private OptionSet options;
+    public boolean verbose = false;
+    public boolean timestamp = false;
+    public boolean utf8 = false;
+    public Charset encoding;
+    public Integer concToWidth;
+    public boolean help = false;
 
-
-    // special case for user-defined type-safe arguments:
-    private final OptionSpec<CharSetArg> encoding;
-    private final OptionSpec<Integer> conc;
-
-
-    public GedcomOptions(final OptionParser parser) {
-        this.parser = parser;
-        this.parser.acceptsAll(asList("h", "help"), "Prints this help message.").forHelp();
-
-        this.parser.acceptsAll(asList("v", "verbose"), "Show verbose informational messages.");
-
-        this.parser.acceptsAll(asList("s", "timestamp"), "Updates .HEAD.DATE.TIME with the current time, in UTC.");
-
-        this.parser.acceptsAll(asList("u", "utf8"), "Converts output to UTF-8 encoding. RECOMMENDED.");
-
-        this.encoding = this.parser
-            .acceptsAll(asList("e", "encoding"), "Forces input encoding to be ENC; do not detect it.").withOptionalArg()
-            .ofType(CharSetArg.class).describedAs("ENC").defaultsTo(new CharSetArg());
-
-        this.conc = this.parser.acceptsAll(asList("c", "conc"), "Rebuilds CONC/CONT lines to WIDTH").withOptionalArg()
-            .ofType(Integer.class).describedAs("WIDTH").withValuesConvertedBy(new ValueConverter<Integer>() {
-                @Override
-                public Integer convert(String value) throws OptionException {
-                    int w = Integer.parseInt(value, 10);
-                    if (w <= 0) {
-                        throw new IllegalStateException("WIDTH must be greater than 0.");
-                    }
-                    return Integer.valueOf(w);
-                }
-
-                @Override
-                public Class<? extends Integer> valueType() {
-                    return Integer.class;
-                }
-
-                @Override
-                public String valuePattern() {
-                    return null;
-                }
-            });
+    public void h() {
+        help();
     }
 
-
-    public GedcomOptions parse(final String... args) throws OptionException {
-        this.options = this.parser.parse(args);
-        return this;
+    public void help() {
+        this.help = true;
+        System.err.println("Usage: java -jar gedcom-lib-all.jar [OPTION]... <in.ged >out.ged 2>ged.log");
+        System.err.println("Process a GEDCOM file.");
+        System.err.println("Options:");
+        options();
     }
 
-    public boolean help() {
-        final boolean help = this.options.has("help");
-        if (help) {
+    protected void options() {
+        //@formatter:off
+        String s = String.join("\n",
+        ""+
+        "-h, --help           Print this help",
+        "-v, --verbose        Show verbose informational messages",
+        "-s, --timestamp      Update .HEAD.DATE.TIME with the current time, in UTC.",
+        "-u, --utf8           Convert output to UTF-8 encoding. RECOMMENDED.",
+        "-e, --encoding[=ENC] Force input encoding to be ENC; do not detect it.",
+        "-c, --conc[=WIDTH]   Rebuild CONC/CONT lines, formatting to maximum width WIDTH"
+        );
+        //@formatter:on
+
+        System.err.println(s);
+    }
+
+    public void v() {
+        verbose();
+    }
+
+    public void verbose() {
+        Jul.verbose(true);
+        log().config("Showing verbose log messages.");
+    }
+
+    public void s() {
+        timestamp();
+    }
+
+    public void timestamp() {
+        this.timestamp = true;
+    }
+
+    public void u() {
+        utf8();
+    }
+
+    public void utf8() {
+        this.utf8 = true;
+    }
+
+    public void e(@Optional final String encoding) {
+        encoding(encoding);
+    }
+
+    public void encoding(@Optional final String encoding) {
+        if (encoding.isEmpty()) {
+            this.encoding = Charset.forName("windows-1252");
+        } else {
+            this.encoding = Charset.forName(encoding);
+        }
+    }
+
+    public void c(@Optional final String width) {
+        conc(width);
+    }
+
+    public void conc(@Optional final String width) {
+        if (width.isEmpty()) {
+            this.concToWidth = 80;
+        } else {
             try {
-                this.parser.printHelpOn(System.out);
+                this.concToWidth = Integer.valueOf(width);
             } catch (final Throwable e) {
-                throw new IllegalStateException(e);
+                throw new IllegalArgumentException("invalid width: " + width);
             }
         }
-        return help;
-    }
-
-    public OptionSet get() {
-        return this.options;
-    }
-
-
-    // special case for user-defined type-safe argument,
-    // with default value only if option is specified
-    public Charset encoding() {
-        return this.options.has("encoding") ? this.encoding.value(this.options).getCharset() : null;
-    }
-
-    public Integer concWidth() {
-        return this.conc.value(this.options);
-    }
-
-
-    public static class CharSetArg {
-        private final Charset charset;
-
-        public CharSetArg() {
-            this("windows-1252");
-        }
-
-        public CharSetArg(final String charsetName) throws IllegalArgumentException {
-            this.charset = Charset.forName(charsetName);
-        }
-
-        public Charset getCharset() {
-            return this.charset;
-        }
-
-        @Override
-        public String toString() {
-            return this.charset.toString();
+        if (this.concToWidth <= 0) {
+            throw new IllegalArgumentException("width specified as " + width + ", but must be greater than 0");
         }
     }
 }

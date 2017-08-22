@@ -1,16 +1,14 @@
 package nu.mine.mosher.gedcom;
 
 
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
+import nu.mine.mosher.mopper.ArgParser;
 
 import java.io.*;
 import java.nio.charset.Charset;
 
 import static nu.mine.mosher.gedcom.GedcomMinimal.minimal;
 import static nu.mine.mosher.logging.Jul.log;
-import static nu.mine.mosher.logging.Jul.verbose;
 
 
 /**
@@ -27,11 +25,8 @@ public final class Gedcom {
     private final Processor proc;
 
 
-    public static void main(final String... args) throws InvalidLevel, IOException, OptionException {
-        final GedcomOptions options = new GedcomOptions(new OptionParser()).parse(args);
-
-        new Gedcom(options, g -> true).main();
-
+    public static void main(final String... args) throws InvalidLevel, IOException  {
+        new Gedcom(new ArgParser<>(new GedcomOptions()).parse(args), g -> true).main();
         System.out.flush();
         System.err.flush();
     }
@@ -44,10 +39,7 @@ public final class Gedcom {
 
 
     public void main() throws InvalidLevel, IOException {
-        verbose(this.options.get().has("verbose"));
-        log().config("Showing verbose log messages.");
-
-        if (this.options.help()) {
+        if (this.options.help) {
             return;
         }
 
@@ -59,24 +51,24 @@ public final class Gedcom {
         log().finest("Estimating standard input has available byte count: " + Integer.toString(cIn));
         if (cIn <= 0) {
             log().warning("No input GEDCOM detected. Generating MINIMAL GEDCOM file.");
-            tree = minimal(this.options.encoding());
+            tree = minimal(this.options.encoding);
         } else {
-            tree = readFile(streamInput, this.options.encoding());
+            tree = readFile(streamInput, this.options.encoding);
         }
 
-        if (this.options.get().has("conc")) {
+        if (this.options.concToWidth != null) {
             log().info("Concatenating CONC/CONT lines.");
             new GedcomConcatenator(tree).concatenate();
         }
 
 
         if (this.proc.process(tree)) {
-            if (this.options.get().has("timestamp")) {
+            if (this.options.timestamp) {
                 tree.timestamp();
             }
 
-            if (this.options.get().has("conc")) {
-                final Integer width = this.options.concWidth();
+            if (this.options.concToWidth != null) {
+                final Integer width = this.options.concToWidth;
                 if (width != null) {
                     log().info("Rebuilding CONC/CONT lines to specified width: " + width);
                     tree.setMaxLength(width);
@@ -86,7 +78,7 @@ public final class Gedcom {
                 new GedcomUnconcatenator(tree).unconcatenate();
             }
 
-            if (this.options.get().has("utf8")) {
+            if (this.options.utf8) {
                 log().info("Converting to UTF-8 encoding for output.");
                 tree.setCharset(Charset.forName("UTF-8"));
             }

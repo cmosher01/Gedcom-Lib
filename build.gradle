@@ -30,7 +30,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
     compile group: 'com.ibm.icu', name: 'icu4j', version: 'latest.release'
-    compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: 'latest.release'
+    compile group: 'nu.mine.mosher.mopper', name: 'mopper', version: 'latest.integration'
 
     testCompile group: 'junit', name: 'junit', version: 'latest.release'
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: 'latest.release'

@@ -324,6 +324,20 @@ public class GedcomCharsetDetector {
             if (buf.read(rb,0,7) >= 7) {
                 ok = rb[0] == '0' && rb[1] == ' ' && rb[2] == 'H' && rb[3] == 'E' && rb[4] == 'A' && rb[5] == 'D' &&
                     (rb[6] == '\n' || rb[6] == '\r');
+                if (!ok) {
+                    // TODO read more bytes and check for UTF-16 (BE and LE)
+                    // might as well check for UTF-32, as well
+                    // and UTF-8
+                    // all with our without BOM
+//                    ok = (rb[0] == 0xfe && rb[1] == 0xff &&
+//                        rb[2] == 0 && rb[3] == '0' &&
+//                        rb[4] == 0 && rb[1] == ' ' &&
+//                        rb[6] == 0 && rb[2] == 'H' &&
+//                        rb[8] == 0 && rb[3] == 'E' &&
+//                        rb[10] == 0 && rb[4] == 'A' &&
+//                        rb[2] == 0 && rb[5] == 'D' &&
+//                        (rb[2] == 0 && (rb[6] == '\n' || rb[6] == '\r')));
+                }
             }
             if (!ok) {
                 log().severe("Input file does not start with 0 HEAD line, and therefore probably is not a GEDCOM file.");
