@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author Chris Mosher
  */
-class GedcomConcatenator {
+public class GedcomConcatenator {
     private static final Logger log = Logger.getLogger("");
 
     private final GedcomTree tree;

@@ -11,7 +11,7 @@ import nu.mine.mosher.collection.TreeNode;
 /**
  * @author Chris Mosher
  */
-class GedcomUnconcatenator {
+public class GedcomUnconcatenator {
     public static final int DEFAULT_MAX_LENGTH = 60;
 
     private static final int KEEP_TRAILING_EMPTY_STRINGS = -999;
