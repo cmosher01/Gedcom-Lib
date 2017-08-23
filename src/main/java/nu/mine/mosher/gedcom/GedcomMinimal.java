@@ -3,6 +3,7 @@ package nu.mine.mosher.gedcom;
 import nu.mine.mosher.collection.TreeNode;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static nu.mine.mosher.logging.Jul.log;
 
@@ -24,7 +25,7 @@ public class GedcomMinimal {
     public static GedcomTree minimal(Charset charsetForce) {
         final GedcomTree tree = new GedcomTree();
 
-        final TreeNode<GedcomLine> head = new TreeNode<>(GedcomLine.createEmpty(0, GedcomTag.HEAD));
+        final TreeNode<GedcomLine> head = new TreeNode<>(GedcomLine.createHeader());
         tree.getRoot().addChild(head);
 
         head.addChild(new TreeNode<>(GedcomLine.createEmpty(1, GedcomTag.CHAR)));
@@ -38,15 +39,15 @@ public class GedcomMinimal {
         head.addChild(new TreeNode<>(GedcomLine.create(1, GedcomTag.SOUR, "MINIMAL")));
         head.addChild(new TreeNode<>(GedcomLine.createPointer(1, GedcomTag.SUBM, SUMB_ID)));
 
-        final TreeNode<GedcomLine> subm = new TreeNode<>(GedcomLine.createEmptyId(0, SUMB_ID, GedcomTag.SUBM));
+        final TreeNode<GedcomLine> subm = new TreeNode<>(GedcomLine.createEmptyId(SUMB_ID, GedcomTag.SUBM));
         tree.getRoot().addChild(subm);
 
         subm.addChild(new TreeNode<>(GedcomLine.create(1, GedcomTag.NAME, "MINIMAL")));
 
-        tree.getRoot().addChild(new TreeNode<>(GedcomLine.createEmpty(0, GedcomTag.TRLR)));
+        tree.getRoot().addChild(new TreeNode<>(GedcomLine.createTrailer()));
 
         if (charsetForce == null) {
-            charsetForce = Charset.forName("UTF-8");
+            charsetForce = StandardCharsets.UTF_8;
         } else {
             log().info("Forcing input character encoding to " + charsetForce.name());
         }
