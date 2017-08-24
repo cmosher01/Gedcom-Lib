@@ -38,7 +38,11 @@ public final class Gedcom {
     }
 
 
-    public void main() throws InvalidLevel, IOException {
+    public void main() throws IOException, InvalidLevel {
+        main((File)null);
+    }
+
+    public void main(final File gedcom) throws InvalidLevel, IOException {
         if (this.options.help) {
             return;
         }
@@ -46,7 +50,7 @@ public final class Gedcom {
 
         final GedcomTree tree;
 
-        final BufferedInputStream streamInput = getStandardInput();
+        final BufferedInputStream streamInput = gedcom == null ? getStandardInput() : getFileInput(gedcom);
         final int cIn = streamInput.available();
         log().finest("Estimating standard input has available byte count: " + Integer.toString(cIn));
         if (cIn <= 0) {
@@ -114,8 +118,16 @@ public final class Gedcom {
     }
 
 
+    private static BufferedInputStream getFileInput(final File gedcom) throws FileNotFoundException {
+        return new BufferedInputStream(new FileInputStream(gedcom));
+    }
+
     private static BufferedInputStream getStandardInput() {
         return new BufferedInputStream(new FileInputStream(FileDescriptor.in));
+    }
+
+    private static BufferedOutputStream getFileOutput(final File gedcom) throws FileNotFoundException {
+        return new BufferedOutputStream(new FileOutputStream(gedcom));
     }
 
     private static BufferedOutputStream getStandardOutput() {
