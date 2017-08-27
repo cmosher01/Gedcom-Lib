@@ -50,13 +50,11 @@ public final class Gedcom {
 
         final GedcomTree tree;
 
-        final BufferedInputStream streamInput = gedcom == null ? getStandardInput() : getFileInput(gedcom);
-        final int cIn = streamInput.available();
-        log().finest("Estimating standard input has available byte count: " + Integer.toString(cIn));
-        if (cIn <= 0) {
-            log().warning("No input GEDCOM detected. Generating MINIMAL GEDCOM file.");
+        if (this.options.minimal) {
+            log().info("Generating MINIMAL GEDCOM file.");
             tree = minimal(this.options.encoding);
         } else {
+            final BufferedInputStream streamInput = gedcom == null ? getStandardInput() : getFileInput(gedcom);
             tree = readFile(streamInput, this.options.encoding);
         }
 

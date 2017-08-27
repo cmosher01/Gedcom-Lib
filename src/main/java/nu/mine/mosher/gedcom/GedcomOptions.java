@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import static nu.mine.mosher.logging.Jul.log;
 
 public class GedcomOptions {
+    public boolean minimal = false;
     public boolean verbose = false;
     public boolean timestamp = false;
     public boolean utf8 = false;
@@ -50,6 +51,10 @@ public class GedcomOptions {
     public void verbose() {
         Jul.verbose(true);
         log().config("Showing verbose log messages.");
+    }
+
+    public void minimal() {
+        this.minimal = true;
     }
 
     public void s() {
