@@ -93,6 +93,14 @@ public class GedcomLine implements Comparable<GedcomLine>
         return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
     }
 
+    public GedcomLine createChild(final GedcomTag newTag, final String newValue) {
+        return createChild(newTag.name(), newValue);
+    }
+
+    public GedcomLine createChild(final String newTag, final String newValue) {
+        return new GedcomLine(this.level+1, "", newTag, newValue);
+    }
+
     public static GedcomLine createHeader() {
         return new GedcomLine(0, "", GedcomTag.HEAD.name(), "");
     }
@@ -119,6 +127,10 @@ public class GedcomLine implements Comparable<GedcomLine>
 
     public static GedcomLine createPointer(final int level, final GedcomTag tag, final String ptrWithoutAts) {
         return new GedcomLine(level, "", tag.name(), "@"+ptrWithoutAts+"@");
+    }
+
+    public static GedcomLine createUser(final int level, final String tag, final String valueWithDoubledAts) {
+        return new GedcomLine(level, "", tag, valueWithDoubledAts);
     }
 
     @Override
