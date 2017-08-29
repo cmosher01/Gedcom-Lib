@@ -55,7 +55,7 @@ class GedcomUnconcatenatorTest {
 
     @Test
     void empty() {
-        v("", 10, asList());
+        v("", 10, asList(""));
     }
 
     @Test

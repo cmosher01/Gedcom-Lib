@@ -136,9 +136,7 @@ public class GedcomUnconcatenator {
             s = lr[1];
         }
 
-        if (!s.isEmpty()) {
-            segments.add(s);
-        }
+        segments.add(s);
     }
 
     /**
