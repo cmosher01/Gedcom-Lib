@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 
 import static nu.mine.mosher.logging.Jul.log;
 
+@SuppressWarnings("WeakerAccess")
 public class GedcomOptions {
     public boolean minimal = false;
     public boolean verbose = false;

@@ -16,6 +16,7 @@ import static nu.mine.mosher.logging.Jul.log;
  *
  * @author Christopher Alan Mosher
  */
+@SuppressWarnings({ "WeakerAccess", "unused" })
 public final class Gedcom {
     public interface Processor {
         boolean process(GedcomTree tree);

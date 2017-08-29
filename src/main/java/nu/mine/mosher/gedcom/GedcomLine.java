@@ -7,6 +7,7 @@ package nu.mine.mosher.gedcom;
  * immutable.
  * @author Chris Mosher
  */
+@SuppressWarnings({ "WeakerAccess", "unused" })
 public class GedcomLine implements Comparable<GedcomLine>
 {
     private final int level;
@@ -93,6 +94,14 @@ public class GedcomLine implements Comparable<GedcomLine>
         return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
     }
 
+    public GedcomLine replacePointer(final String newPointerWithoutAts) {
+        return new GedcomLine(this.level, "", this.tagString, "@"+newPointerWithoutAts+"@");
+    }
+
+    public GedcomLine replacePointer(final GedcomLine to) {
+        return new GedcomLine(this.level, "", this.tagString, "@"+to.getID()+"@");
+    }
+
     public GedcomLine createChild(final GedcomTag newTag, final String newValue) {
         return createChild(newTag.name(), newValue);
     }
@@ -117,12 +126,20 @@ public class GedcomLine implements Comparable<GedcomLine>
         return new GedcomLine(0, "@"+idWithoutAts+"@", tag.name(), "");
     }
 
+    public static GedcomLine createEmptyUid(final GedcomTag tag) {
+        return createEmptyId(UidGen.generateUid(), tag);
+    }
+
     public static GedcomLine create(final int level, final GedcomTag tag, final String valueWithDoubledAts) {
         return new GedcomLine(level, "", tag.name(), valueWithDoubledAts);
     }
 
     public static GedcomLine createId(final String idWithoutAts, final GedcomTag tag, final String valueWithDoubledAts) {
         return new GedcomLine(0, "@"+idWithoutAts+"@", tag.name(), valueWithDoubledAts);
+    }
+
+    public static GedcomLine createUid(final GedcomTag tag, final String valueWithDoubledAts) {
+        return createId(UidGen.generateUid(), tag, valueWithDoubledAts);
     }
 
     public static GedcomLine createPointer(final int level, final GedcomTag tag, final String ptrWithoutAts) {
