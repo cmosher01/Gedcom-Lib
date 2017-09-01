@@ -1,9 +1,12 @@
 package nu.mine.mosher.gedcom;
 
+import nu.mine.mosher.collection.TreeNode;
+
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Eventually this will be a full-fledged data reference
@@ -18,8 +21,24 @@ public class GedcomDataRef {
     public static class InvalidSyntax extends Exception {
     }
 
+    private static class Tag {
+        final String tagAsString;
+        GedcomTag tag;
+        Pattern pattern;
+        Tag(final String tag) {
+            this.tagAsString = tag;
+            try {
+                this.tag = GedcomTag.valueOf(tag);
+            } catch (final Throwable e) {
+                this.tag = null;
+            }
+        }
+        void setPattern(final String pattern) {
+            this.pattern = Pattern.compile(pattern);
+        }
+    }
 
-    private final List<String> path;
+    private final List<Tag> path;
 
 
 
@@ -29,11 +48,31 @@ public class GedcomDataRef {
 
 
 
+    public boolean matches(final int i, final TreeNode<GedcomLine> node) {
+        if (i < 0 || this.path.size() <= i) {
+            return false;
+        }
+
+        final Tag tagRef = this.path.get(i);
+        if (tagRef.tagAsString.equals("*") || node.getObject().getTagString().toLowerCase().equals(tagRef.tagAsString)) {
+            return matchesPattern(tagRef.pattern, node.getObject().getValue());
+        }
+
+        return false;
+    }
+
+    private boolean matchesPattern(final Pattern pattern, final String value) {
+        if (pattern == null) {
+            return true;
+        }
+        return pattern.matcher(value).matches();
+    }
+
     public String get(final int i) {
         if (i < 0 || this.path.size() <= i) {
             return "";
         }
-        return this.path.get(i);
+        return this.path.get(i).tagAsString;
     }
 
     public boolean at(final int i) {
@@ -54,8 +93,8 @@ public class GedcomDataRef {
 
 
 
-    private static ArrayList<String> parse(final String expr) throws InvalidSyntax {
-        final ArrayList<String> path = new ArrayList<>(8);
+    private static ArrayList<Tag> parse(final String expr) throws InvalidSyntax {
+        final ArrayList<Tag> path = new ArrayList<>(8);
 
         final int START = 0;
         final int TAG = 1;
@@ -79,15 +118,18 @@ public class GedcomDataRef {
                     if (token.ttype == '.') {
                         throw new InvalidSyntax();
                     }
-                    path.add(token.sval);
+                    path.add(new Tag(token.sval));
                     state = DOWN;
                 }
                 break;
                 case DOWN: {
-                    if (token.ttype != '.') {
+                    if (token.ttype == '\"') {
+                        path.get(path.size()-1).setPattern(token.sval);
+                    } else if (token.ttype != '.') {
                         throw new InvalidSyntax();
+                    } else {
+                        state = TAG;
                     }
-                    state = TAG;
                 }
                 break;
             }
@@ -111,6 +153,12 @@ public class GedcomDataRef {
         t.wordChars('A', 'Z');
         t.wordChars('a', 'z');
         t.wordChars('_', '_');
+
+        // characters with special meaning to us
+        t.wordChars('*', '*');
+
+        // quotes (for value-matching pattern string)
+        t.quoteChar('\"');
 
         return t;
     }
