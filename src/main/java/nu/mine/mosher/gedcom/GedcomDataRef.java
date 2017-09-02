@@ -2,11 +2,16 @@ package nu.mine.mosher.gedcom;
 
 import nu.mine.mosher.collection.TreeNode;
 
+import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import static nu.mine.mosher.logging.Jul.log;
 
 /**
  * Eventually this will be a full-fledged data reference
@@ -21,6 +26,11 @@ public class GedcomDataRef {
     public static class InvalidSyntax extends Exception {
     }
 
+    /**
+     * Represents each item in the reference expression.
+     * For example, the "BIRT" in ".INDI.BIRT", or the "*"
+     * in ".INDI.*.DATE"
+     */
     private static class Tag {
         final String tagAsString;
         GedcomTag tag;
@@ -33,7 +43,7 @@ public class GedcomDataRef {
                 this.tag = null;
             }
         }
-        void setPattern(final String pattern) {
+        void setPattern(final String pattern) throws PatternSyntaxException {
             this.pattern = Pattern.compile(pattern);
         }
     }
@@ -47,6 +57,21 @@ public class GedcomDataRef {
     }
 
 
+    public void forEach(final GedcomTree tree, final Consumer<TreeNode<GedcomLine>> fn) {
+        forEachHelper(tree.getRoot(), 0, fn);
+    }
+
+    private void forEachHelper(final TreeNode<GedcomLine> node, final int level, final Consumer<TreeNode<GedcomLine>> fn) {
+        node.forEach( c -> {
+            if (matches(level, c)) {
+                if (at(level)) {
+                    fn.accept(c);
+                } else {
+                    forEachHelper(c, level + 1, fn);
+                }
+            }
+        });
+    }
 
     public boolean matches(final int i, final TreeNode<GedcomLine> node) {
         if (i < 0 || this.path.size() <= i) {

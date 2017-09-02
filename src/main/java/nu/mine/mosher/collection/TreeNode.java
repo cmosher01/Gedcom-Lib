@@ -4,6 +4,7 @@ package nu.mine.mosher.collection;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static nu.mine.mosher.logging.Jul.log;
 
@@ -294,5 +295,12 @@ public class TreeNode<T extends Comparable<T>> implements Iterable<TreeNode<T>>,
     public Iterator<TreeNode<T>> iterator()
     {
         return children();
+    }
+
+    public void forAll(final Consumer<TreeNode<T>> fn) {
+        fn.accept(this);
+        if (getChildCount() > 0) {
+            forEach(c -> c.forAll(fn));
+        }
     }
 }

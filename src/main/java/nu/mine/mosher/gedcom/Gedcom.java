@@ -6,6 +6,7 @@ import nu.mine.mosher.mopper.ArgParser;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static nu.mine.mosher.gedcom.GedcomMinimal.minimal;
 import static nu.mine.mosher.logging.Jul.log;
@@ -90,6 +91,11 @@ public final class Gedcom {
         }
     }
 
+    public static GedcomTree valueOf(final String gedcom) throws IOException, InvalidLevel {
+        return Gedcom.readFile(
+            new BufferedInputStream(new ByteArrayInputStream(gedcom.getBytes(StandardCharsets.UTF_8))),
+            StandardCharsets.UTF_8);
+    }
 
     public static GedcomTree readFile(final BufferedInputStream streamInput) throws IOException, InvalidLevel {
         return readFile(streamInput, null);

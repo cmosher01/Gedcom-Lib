@@ -94,8 +94,22 @@ public class GedcomLine implements Comparable<GedcomLine>
         return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
     }
 
+    public GedcomLine replaceLink(final String newId) {
+        if (hasID()) {
+            return replaceId(newId);
+        }
+        if (isPointer()) {
+            return replacePointer(newId);
+        }
+        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: "+toString());
+    }
+
     public GedcomLine replacePointer(final String newPointerWithoutAts) {
         return new GedcomLine(this.level, "", this.tagString, "@"+newPointerWithoutAts+"@");
+    }
+
+    public GedcomLine replaceId(final String newIdWithoutAts) {
+        return new GedcomLine(this.level, "@"+newIdWithoutAts+"@", this.tagString, this.value);
     }
 
     public GedcomLine replacePointer(final GedcomLine to) {
@@ -251,6 +265,10 @@ public class GedcomLine implements Comparable<GedcomLine>
         return this.pointer.length() > 0;
     }
 
+    public boolean isLink() {
+        return isPointer() || hasID();
+    }
+
     /**
      * @return the ID for this line
      */
@@ -273,6 +291,16 @@ public class GedcomLine implements Comparable<GedcomLine>
     public String getPointer()
     {
         return this.pointer;
+    }
+
+    public String getLink() {
+        if (isPointer()) {
+            return getPointer();
+        }
+        if (hasID()) {
+            return getID();
+        }
+        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: "+toString());
     }
 
     /**
