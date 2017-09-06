@@ -35,3 +35,4 @@ RUN ./gradlew -i build javadoc asciidoc publish 2>&1 | tee ./build/reports/logs/
 
 RUN ln -s /root/.m2/repository ./build/asciidoc/html5/maven
 RUN ln -s . ./build/asciidoc/html5/gedcom-lib
+RUN ln -s ~/build/distributions/gedcom-lib-shadow*.tar ./build/asciidoc/html5/gedcom-lib.tar
