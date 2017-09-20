@@ -2,7 +2,6 @@ plugins {
     id 'ca.coglinc.javacc' version '2.4.0'
     id 'org.asciidoctor.gradle.asciidoctor' version '1.5.1'
     id 'org.asciidoctor.convert' version '1.5.2'
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
 
@@ -26,7 +25,6 @@ idea {
 
 apply plugin: 'java'
 apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
     compile group: 'com.ibm.icu', name: 'icu4j', version: 'latest.release'
@@ -59,9 +57,6 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-        }
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
         }
     }
     repositories {
