@@ -2,6 +2,11 @@ package nu.mine.mosher.gedcom;
 
 
 
+import java.text.Normalizer;
+
+import static java.text.Normalizer.Form.NFC;
+import static java.text.Normalizer.normalize;
+
 /**
  * Represents one GEDCOM entry (usually one line). Objects of this class are
  * immutable.
@@ -193,6 +198,8 @@ public class GedcomLine implements Comparable<GedcomLine>
             if (!this.tag.equals(GedcomTag.DATE))
             {
                 v = restoreAts(v);
+                // TODO make normalization optional
+                v = normalize(v, NFC);
             }
             sb.append(v);
         }
