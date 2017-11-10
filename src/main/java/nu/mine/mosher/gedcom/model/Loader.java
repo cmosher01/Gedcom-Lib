@@ -1,13 +1,8 @@
 package nu.mine.mosher.gedcom.model;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.text.Collator;
+import java.util.*;
 
 import nu.mine.mosher.gedcom.GedcomLine;
 import nu.mine.mosher.gedcom.GedcomTag;
@@ -40,12 +35,15 @@ public class Loader {
     private final Map<TreeNode<GedcomLine>, Event> mapNodeToEvent = new HashMap<>();
 
     private Person first;
+    private final List<Person> people = new ArrayList<>(256);
+    private final Collator sorter;
     private String description;
 
 
     public Loader(final GedcomTree gedcom, final String filename) {
         this.gedcom = gedcom;
         this.name = filename;
+        this.sorter = sorter();
     }
 
 
@@ -86,6 +84,7 @@ public class Loader {
 
             if (tagTop.equals(GedcomTag.INDI)) {
                 final Person person = parseIndividual(nodeTop, mapIDtoSource);
+                this.people.add(person);
                 this.mapNodeToPerson.put(nodeTop, person);
                 mapIDtoPerson.put(person.getID(), person);
                 storeInUuidMap(person);
@@ -105,6 +104,20 @@ public class Loader {
         }
 
         mapIDtoPerson.values().forEach(Person::initKeyDates);
+
+        this.people.sort((p1, p2) -> this.sorter.compare(p1.getNameSortable(), p2.getNameSortable()));
+    }
+
+    /* list of all people, sorted by name */
+    public List<Person> getAllPeople() {
+        return Collections.unmodifiableList(this.people);
+    }
+
+    private Collator sorter() {
+        final Collator c = Collator.getInstance();
+        c.setDecomposition(Collator.FULL_DECOMPOSITION);
+        c.setStrength(Collator.PRIMARY);
+        return c;
     }
 
     public String getName() {

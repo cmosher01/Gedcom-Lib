@@ -31,6 +31,7 @@ public class Person implements Comparable<Person>
     private final String ID;
     private final String name;
     private final String nameSortable;
+    private final String nameSortedDisplay;
     private final ArrayList<Event> rEvent;
     private final ArrayList<Partnership> rPartnership;
     private final boolean isPrivate;
@@ -64,7 +65,8 @@ public class Person implements Comparable<Person>
         }
         this.ID = ID;
         this.name = name;
-        this.nameSortable = buildSortableName(name);
+        this.nameSortable = buildNameForAlphaSort(name);
+        this.nameSortedDisplay = buildNameForAlphaDisplay(name);
         this.rEvent = rEvent;
         this.rPartnership = partnership;
         this.isPrivate = isPrivate;
@@ -73,26 +75,64 @@ public class Person implements Comparable<Person>
         Collections.sort(this.rPartnership);
     }
 
-    private static String buildSortableName(String name) {
+    public static String buildNameForAlphaSort(final String name) {
+        final Matcher matcher = patternName.matcher(name);
+        if (!matcher.matches()) {
+            return name.trim().toUpperCase();
+        }
+
+        final String givenName1 = matcher.group(1).trim();
+        final String surname = matcher.group(2).trim();
+        final String givenName2 = matcher.group(3).trim();
+
+        return buildAlphaName(cleanseGivenNames(givenName1), cleanseSurname(surname), cleanseGivenNames(givenName2)).toUpperCase();
+    }
+
+    public static String buildNameForAlphaDisplay(final String name) {
         final Matcher matcher = patternName.matcher(name);
         if (!matcher.matches()) {
             return name;
         }
 
+        final String givenName1 = matcher.group(1).trim();
+        final String surname = matcher.group(2).trim();
+        final String givenName2 = matcher.group(3).trim();
+
+        return buildAlphaName(givenName1, surname, givenName2);
+    }
+
+    public static String buildAlphaName(final String givenName1, final String surname, final String givenName2) {
         final StringBuilder sb = new StringBuilder(32);
-        final String surname = matcher.group(2);
-        final String givenName1 = matcher.group(1);
-        final String givenName2 = matcher.group(3);
-        sb.append(surname);
-        if (sb.length() > 0 && givenName1.length() > 0) {
-            sb.append(", ");
+        appendWord(sb, "", surname);
+        appendWord(sb, ", ", givenName1);
+        appendWord(sb, " ", givenName2);
+        return sb.toString();
+    }
+
+    public static void appendWord(final StringBuilder appendTo, final String delim, final String wordOrEmpty) {
+        if (wordOrEmpty == null) {
+            return;
         }
-        sb.append(givenName1);
-        if (sb.length() > 0 && givenName2.length() > 0) {
-            sb.append(", ");
+        final String w = wordOrEmpty.trim();
+        if (w.isEmpty()) {
+            return;
         }
-        sb.append(givenName2);
-        return sb.toString().toUpperCase();
+        if (appendTo.length() > 0) {
+            appendTo.append(delim);
+        }
+        appendTo.append(w);
+    }
+
+    public static String cleanseGivenNames(final String s) {
+        return cleanse(s," ");
+    }
+
+    public static String cleanseSurname(final String s) {
+        return cleanse(s,"\u00a0");
+    }
+
+    public static String cleanse(final String s, final String r) {
+        return s.replaceAll("[^\\p{IsAlphabetic}\\p{IsWhite_Space}]", "").replaceAll("\\p{IsWhite_Space}+", r);
     }
 
     public void initKeyDates()
