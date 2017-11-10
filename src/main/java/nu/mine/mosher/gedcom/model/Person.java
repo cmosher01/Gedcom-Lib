@@ -241,6 +241,10 @@ public class Person implements Comparable<Person>
         return this.nameSortable;
     }
 
+    public String getNameSortedDisplay() {
+        return this.nameSortedDisplay;
+    }
+
     public String getClassedName()
     {
         final Matcher matcher = patternName.matcher(this.name);
