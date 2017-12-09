@@ -18,6 +18,7 @@ repositories {
 dependencies {
     compile group: 'nu.mine.mosher.gedcom', name: 'gedcom-lib', version: 'latest.integration'
 }
+```
 
 Simple example of processing a GEDCOM file, just counting the individuals:
 
