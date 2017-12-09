@@ -2,32 +2,30 @@ package nu.mine.mosher.collection;
 
 
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import nu.mine.mosher.collection.TreeNode.NotChild;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import nu.mine.mosher.collection.TreeNode.NotChild;
-
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 
 /**
  * Unit tests for {@link TreeNode}.
+ *
  * @author Chris Mosher
  */
-@SuppressWarnings(
-{ "static-method", "boxing" })
-public class TreeNodeTest
-{
+@SuppressWarnings({ "static-method", "boxing" })
+public class TreeNodeTest {
     /**
      * Tests adding a child.
      */
     @Test
-    public void nominalChild()
-    {
+    public void nominalChild() {
         final String sa = "a";
         final TreeNode<String> a = new TreeNode<>(sa);
         final String sb = "b";
@@ -38,8 +36,7 @@ public class TreeNodeTest
         assertThat(a.getChildCount(), is(1));
 
         int c = 0;
-        for (final TreeNode<String> i : a)
-        {
+        for (final TreeNode<String> i : a) {
             ++c;
             assertThat(i.getObject(), sameInstance(sb));
         }
@@ -50,11 +47,11 @@ public class TreeNodeTest
 
     /**
      * Tests removing a child.
+     *
      * @throws NotChild should not happen
      */
     @Test
-    public void nominalRemoveChild() throws NotChild
-    {
+    public void nominalRemoveChild() throws NotChild {
         final String sa = "a";
         final TreeNode<String> a = new TreeNode<>(sa);
         final String sb = "b";
@@ -64,8 +61,7 @@ public class TreeNodeTest
         a.removeChild(b);
         assertThat(a.getChildCount(), is(0));
         int c = 0;
-        for (final TreeNode<String> i : a)
-        {
+        for (final TreeNode<String> i : a) {
             i.getObject();
             ++c;
         }
@@ -76,25 +72,23 @@ public class TreeNodeTest
 
     /**
      * Tests invalid child removal
+     *
      * @throws NotChild should not happen
      */
-    @Test(expected = TreeNode.NotChild.class)
-    public void invalidRemoveChild() throws NotChild
-    {
+    @Test
+    public void invalidRemoveChild() throws NotChild {
         final String sa = "a";
         final TreeNode<String> a = new TreeNode<>(sa);
         final String sb = "b";
         final TreeNode<String> b = new TreeNode<>(sb);
-
-        a.removeChild(b);
+        assertThrows(TreeNode.NotChild.class, () -> a.removeChild(b));
     }
 
     /**
      * Tests removing a node from its parent.
      */
     @Test
-    public void nominalRemoveFromParent()
-    {
+    public void nominalRemoveFromParent() {
         final String sa = "a";
         final TreeNode<String> a = new TreeNode<>(sa);
         final String sb = "b";
@@ -105,8 +99,7 @@ public class TreeNodeTest
 
         assertThat(a.getChildCount(), is(0));
         int c = 0;
-        for (final TreeNode<String> i : a)
-        {
+        for (final TreeNode<String> i : a) {
             i.getObject();
             ++c;
         }
@@ -120,8 +113,7 @@ public class TreeNodeTest
      * node.
      */
     @Test
-    public void addChildOfOtherExistingParent()
-    {
+    public void addChildOfOtherExistingParent() {
         final String sa = "a";
         final TreeNode<String> a = new TreeNode<>(sa);
         final String sb = "b";
@@ -138,8 +130,7 @@ public class TreeNodeTest
 
         assertThat(x.getChildCount(), is(1));
 
-        for (final TreeNode<String> i : x)
-        {
+        for (final TreeNode<String> i : x) {
             assertThat(i.getObject(), sameInstance(sb));
         }
 
@@ -150,8 +141,7 @@ public class TreeNodeTest
      * Tests adding three children.
      */
     @Test
-    public void threeChildren()
-    {
+    public void threeChildren() {
         final TreeNode<String> p = new TreeNode<>("p");
 
         final TreeNode<String> c1 = new TreeNode<>("c1");
@@ -164,8 +154,7 @@ public class TreeNodeTest
         assertThat(p.getChildCount(), is(3));
 
         final List<String> actual = new ArrayList<>();
-        for (final TreeNode<String> i : p)
-        {
+        for (final TreeNode<String> i : p) {
             actual.add(i.getObject());
             assertThat(i.parent(), sameInstance(p));
         }
@@ -176,11 +165,11 @@ public class TreeNodeTest
 
     /**
      * Tests removing a middle child.
+     *
      * @throws NotChild should not happen
      */
     @Test
-    public void removeMiddleChild() throws NotChild
-    {
+    public void removeMiddleChild() throws NotChild {
         final TreeNode<String> p = new TreeNode<>("p");
 
         final TreeNode<String> c1 = new TreeNode<>("c1");
@@ -194,8 +183,7 @@ public class TreeNodeTest
 
         assertThat(p.getChildCount(), is(2));
         final List<String> actual = new ArrayList<>();
-        for (final TreeNode<String> i : p)
-        {
+        for (final TreeNode<String> i : p) {
             actual.add(i.getObject());
             assertThat(i.parent(), sameInstance(p));
         }
@@ -207,8 +195,7 @@ public class TreeNodeTest
      * Tests a simple string representation.
      */
     @Test
-    public void nominalToString()
-    {
+    public void nominalToString() {
         final TreeNode<String> p = new TreeNode<>("ABC");
         assertThat(p.toString(), is("ABC"));
     }
