@@ -252,13 +252,16 @@ public class Loader {
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
-            if (tag.equals(GedcomTag.NAME)) {
-                if (name.isEmpty()) { // TODO process any additional NAME records
-                    name = parseName(node);
-                }
-            } else if (uuid == null && hasUuidTag(line)) {
+            if (uuid == null && hasUuidTag(line)) {
                 uuid = parseUuid(node);
-            } else if (GedcomTag.setIndividualEvent.contains(tag) || GedcomTag.setIndividualAttribute.contains(tag)) {
+            } else if (GedcomTag.setIndividualEvent.contains(tag) || GedcomTag.setIndividualAttribute.contains(tag) || tag.equals(GedcomTag.NAME)) {
+                if (tag.equals(GedcomTag.NAME)) {
+                    if (name.isEmpty()) {
+                        // grab out the name (just the first one)
+                        name = parseName(node);
+                    }
+                    // fall through and parse name as an event:
+                }
                 final Event event = parseEvent(node, mapIDtoSource);
                 this.mapNodeToEvent.put(node, event);
                 rEvent.add(event);
@@ -445,6 +448,7 @@ public class Loader {
 
     private static String getEventName(final TreeNode<GedcomLine> node) {
         final GedcomTag tag = node.getObject().getTag();
+
         if (tag.equals(GedcomTag.EVEN)) {
             final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
             getChildren(node, rNode);
@@ -457,7 +461,7 @@ public class Loader {
             }
         }
 
-        final String eventName = EventNames.getName(tag);
+        final String eventName = tag.equals(GedcomTag.NAME) ? "Name" : EventNames.getName(tag);
         final String value = node.getObject().getValue();
         if (value.length() == 0) {
             return eventName;

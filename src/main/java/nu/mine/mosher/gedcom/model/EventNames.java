@@ -65,6 +65,7 @@ public final class EventNames
 
 	public static String getName(final GedcomTag tag)
 	{
-		return map.get(tag);
+        final String s = map.get(tag);
+        return s == null ? "" : s;
 	}
 }
