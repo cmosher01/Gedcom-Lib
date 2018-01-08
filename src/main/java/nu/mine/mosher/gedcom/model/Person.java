@@ -293,7 +293,7 @@ public class Person implements Comparable<Person>
         String placePrev = UUID.randomUUID().toString();
         String place;
         for (final Event e : this.rEvent) {
-            if (e.getPlace().equals(placePrev)) {
+            if (e.getPlace().equals(placePrev) && !e.getPlace().isEmpty()) {
                 place = "\u2033";
             } else {
                 place = e.getPlace();
@@ -301,7 +301,6 @@ public class Person implements Comparable<Person>
             }
             r.add(new Event(e.getType(),e.getDate(),place,e.getNote(),e.getCitations()));
         }
-//        TODO return Collections.unmodifiableList(r);
         return r;
     }
 
