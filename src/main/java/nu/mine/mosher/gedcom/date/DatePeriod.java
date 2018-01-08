@@ -103,6 +103,18 @@ public class DatePeriod implements Comparable<DatePeriod>
     }
 
     /**
+     * Alternate user-displayable representation, intended for
+     * tabular display.
+     * @return
+     */
+    public String getTabularString() {
+        if (isSingle()) {
+            return this.dateStart.getTabularString();
+        }
+        return this.dateStart.getTabularString() + "/" + this.dateEnd.getTabularString();
+    }
+
+    /**
      * Returns a string representation of this period, intended for display to
      * the end user (not persistence).
      * @return display string

@@ -280,6 +280,41 @@ public class YMD implements Comparable<YMD>
     }
 
     /**
+     * Alternate user-displayable representation, intended for
+     * tabular display.
+     * @return
+     */
+    public String getTabularString() {
+        if (this.year == 9999 || this.year == -9999) {
+            return "XXXX-XX-XX";
+        }
+
+        final StringBuilder sb = new StringBuilder();
+
+        if (this.year < 0) {
+            sb.append('\u2212');
+        } else {
+            // TODO should we prefix AD dates with a figure-space?
+        }
+        sb.append(String.format("%04d", Math.abs(this.year)));
+        if (this.month > 0) {
+            sb.append(String.format("-%02d", this.month));
+        } else {
+            sb.append("-XX");
+        }
+        if (this.day > 0) {
+            sb.append(String.format("-%02d", this.day));
+        } else {
+            sb.append("-XX");
+        }
+        if (this.circa) {
+            sb.append("~");
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Formats this object into a string, intended to be shown to the end user.
      * @return string for display
      */

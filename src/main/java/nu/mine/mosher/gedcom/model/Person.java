@@ -288,6 +288,23 @@ public class Person implements Comparable<Person>
         return this.rEvent;
     }
 
+    public List<Event> getEventsWithDittoedPlaces() {
+        final ArrayList<Event> r = new ArrayList<>(this.rEvent.size());
+        String placePrev = UUID.randomUUID().toString();
+        String place;
+        for (final Event e : this.rEvent) {
+            if (e.getPlace().equals(placePrev)) {
+                place = "\u2033";
+            } else {
+                place = e.getPlace();
+                placePrev = place;
+            }
+            r.add(new Event(e.getType(),e.getDate(),place,e.getNote(),e.getCitations()));
+        }
+//        TODO return Collections.unmodifiableList(r);
+        return r;
+    }
+
     public ArrayList<Event> getEventsWithin(final DatePeriod period)
     {
         final ArrayList<Event> rWithin = new ArrayList<>();

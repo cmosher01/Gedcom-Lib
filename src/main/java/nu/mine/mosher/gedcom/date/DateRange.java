@@ -169,8 +169,31 @@ public class DateRange implements Comparable<DateRange>
     }
 
     /**
+     * Alternate user-displayable representation, intended for
+     * tabular display.
+     * @return
+     */
+    public String getTabularString() {
+        final StringBuilder sb = new StringBuilder();
+        if (isExact()) {
+            sb.append(this.earliest.getTabularString());
+        }
+        else if (equals(UNKNOWN)) {
+            // TODO is "?" the right way to display an "unknown" date range?
+            sb.append("?");
+        }
+        else {
+            sb.append(this.earliest.getTabularString());
+            sb.append("~");
+            sb.append(this.latest.getTabularString());
+        }
+        return sb.toString();
+    }
+
+    /**
      * Returns a string representation of this range, indended for display to
      * the end user, and not intended for persistence.
+     *
      * @return displayable string
      */
     @Override
@@ -197,6 +220,7 @@ public class DateRange implements Comparable<DateRange>
 
     /**
      * Compares this range to the given range. Not consistent with equals.
+     *
      * @param that range to compare to
      * @return -1, 0, or +1; for less, equal, or greater
      */
