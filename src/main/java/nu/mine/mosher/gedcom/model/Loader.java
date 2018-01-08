@@ -461,7 +461,7 @@ public class Loader {
             }
         }
 
-        final String eventName = tag.equals(GedcomTag.NAME) ? "Name" : EventNames.getName(tag);
+        final String eventName = tag.equals(GedcomTag.NAME) ? "name" : EventNames.getName(tag);
         final String value = node.getObject().getValue();
         if (value.length() == 0) {
             return eventName;
