@@ -294,7 +294,7 @@ public class Person implements Comparable<Person>
         String place;
         for (final Event e : this.rEvent) {
             if (e.getPlace().equals(placePrev) && !e.getPlace().isEmpty()) {
-                place = "\u2033";
+                place = "\u201D";
             } else {
                 place = e.getPlace();
                 placePrev = place;
