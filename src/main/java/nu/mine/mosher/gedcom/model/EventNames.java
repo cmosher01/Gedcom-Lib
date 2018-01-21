@@ -52,7 +52,7 @@ public final class EventNames
 		map.put(GedcomTag.NCHI,"count of children");
 		map.put(GedcomTag.NMR,"count of marriages");
 		map.put(GedcomTag.OCCU,"occupation");
-		map.put(GedcomTag.PROP,"posession");
+		map.put(GedcomTag.PROP,"possession");
 		map.put(GedcomTag.RELI,"religion");
 		map.put(GedcomTag.SSN ,"US Social Security number");
 		map.put(GedcomTag.TITL,"title");
