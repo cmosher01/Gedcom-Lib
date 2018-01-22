@@ -449,21 +449,28 @@ public class Loader {
     private static String getEventName(final TreeNode<GedcomLine> node) {
         final GedcomTag tag = node.getObject().getTag();
 
-        if (tag.equals(GedcomTag.EVEN)) {
+        String eventName = "";
+
+        if (tag.equals(GedcomTag.NAME)) {
+            eventName = "name";
+        } else if (tag.equals(GedcomTag.EVEN)) {
             final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
             getChildren(node, rNode);
             for (final TreeNode<GedcomLine> n : rNode) {
                 final GedcomLine line = n.getObject();
                 final GedcomTag t = line.getTag();
                 if (t.equals(GedcomTag.TYPE)) {
-                    return line.getValue();
+                    eventName = line.getValue();
                 }
             }
         }
 
-        final String eventName = tag.equals(GedcomTag.NAME) ? "name" : EventNames.getName(tag);
+        if (eventName.isEmpty()) {
+            eventName = EventNames.getName(tag);
+        }
+
         final String value = node.getObject().getValue();
-        if (value.length() == 0) {
+        if (value.isEmpty()) {
             return eventName;
         }
         return eventName + ": " + value;
