@@ -426,6 +426,9 @@ public class Loader {
     }
 
     private String parseNote(final TreeNode<GedcomLine> node) {
+        if (!node.getObject().isPointer()) {
+            return node.getObject().getValue();
+        }
         final String id = node.getObject().getPointer();
         final TreeNode<GedcomLine> nodeNote = this.gedcom.getNode(id);
         if (nodeNote == null) {
