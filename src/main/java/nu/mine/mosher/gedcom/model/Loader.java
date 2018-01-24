@@ -1,6 +1,7 @@
 package nu.mine.mosher.gedcom.model;
 
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.text.Collator;
 import java.util.*;
 
@@ -186,7 +187,7 @@ public class Loader {
     }
 
 
-    private static void getChildren(TreeNode<GedcomLine> root, Collection<TreeNode<GedcomLine>> rNodeTop) {
+    private static void getChildren(TreeNode<GedcomLine> root, final Collection<TreeNode<GedcomLine>> rNodeTop) {
         for (final TreeNode<GedcomLine> child : root) {
             rNodeTop.add(child);
         }
@@ -373,16 +374,37 @@ public class Loader {
                 note += n;
             } else if (tag.equals(GedcomTag.SOUR)) {
                 final Source source = lookUpSource(node.getObject().getPointer(), mapIDtoSource);
-                final String citationPage = getSourcePtPage(node);
-                final String citationExtraText = getSourcePtText(node);
-                citations.add(new Citation(source, citationPage, citationExtraText));
+                final String page = getSourcePtPage(node);
+                final String text = getSourcePtText(node);
+                final Set<MultimediaReference> attachments = getSourcePtAttachments(node);
+                citations.add(new Citation(source, page, text, attachments));
             }
         }
         // TODO handle case of date == null
         return new Event(whichEvent, date, place, note, citations);
     }
 
-    private static String getSourcePtPage(TreeNode<GedcomLine> node) {
+    private Set<MultimediaReference> getSourcePtAttachments(final TreeNode<GedcomLine> node) {
+        final Set<MultimediaReference> r = new HashSet<>();
+        node.forAll(obje -> {
+            if (obje.getObject().getTag().equals(GedcomTag.OBJE) && obje.getObject().isPointer()) {
+                final TreeNode<GedcomLine> n = this.gedcom.getNode(obje.getObject().getPointer());
+                if (n != null) {
+                    n.forAll(file -> {
+                        if (file.getObject().getTag().equals(GedcomTag.FILE)) {
+                            final String ref = file.getObject().getValue();
+                            if (!ref.isEmpty()) {
+                                r.add(new MultimediaReference(ref));
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        return r;
+    }
+
+    private static String getSourcePtPage(final TreeNode<GedcomLine> node) {
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(node, rNode);
         for (final TreeNode<GedcomLine> n : rNode) {
@@ -395,7 +417,7 @@ public class Loader {
         return "";
     }
 
-    private static String getSourcePtText(TreeNode<GedcomLine> node) {
+    private static String getSourcePtText(final TreeNode<GedcomLine> node) {
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(node, rNode);
         for (final TreeNode<GedcomLine> n : rNode) {
@@ -408,7 +430,7 @@ public class Loader {
         return "";
     }
 
-    private static String parseData(TreeNode<GedcomLine> node) {
+    private static String parseData(final TreeNode<GedcomLine> node) {
         final StringBuilder sb = new StringBuilder(256);
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(node, rNode);
