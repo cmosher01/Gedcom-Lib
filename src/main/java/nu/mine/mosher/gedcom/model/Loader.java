@@ -333,7 +333,9 @@ public class Loader {
     }
 
     private static Source lookUpSource(final String id, final Map<String, Source> mapIDtoSource) {
-        return mapIDtoSource.get(id);
+        return mapIDtoSource.containsKey(id) ?
+            mapIDtoSource.get(id) :
+            new Source("", "", "", "", "", null);
     }
 
     private static String parseName(final TreeNode<GedcomLine> nodeName) {
