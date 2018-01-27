@@ -75,6 +75,10 @@ public class Person implements Comparable<Person>
         Collections.sort(this.rPartnership);
     }
 
+    public void sortPartnerships() {
+        Collections.sort(this.rPartnership);
+    }
+
     public static String buildNameForAlphaSort(final String name) {
         final Matcher matcher = patternName.matcher(name);
         if (!matcher.matches()) {

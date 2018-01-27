@@ -104,7 +104,8 @@ public class Loader {
             }
         }
 
-        mapIDtoPerson.values().forEach(Person::initKeyDates);
+        this.people.forEach(Person::initKeyDates);
+        this.people.forEach(Person::sortPartnerships);
 
         this.people.sort((p1, p2) -> this.sorter.compare(p1.getNameSortable(), p2.getNameSortable()));
     }
