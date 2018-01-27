@@ -112,4 +112,18 @@ public class Source
 	{
 		return this.uuid;
 	}
+
+    @Override
+    public boolean equals(final Object object) {
+        if (!(object instanceof Source)) {
+            return false;
+        }
+        final Source that = (Source)object;
+        return this.uuid.equals(that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.uuid.hashCode();
+    }
 }

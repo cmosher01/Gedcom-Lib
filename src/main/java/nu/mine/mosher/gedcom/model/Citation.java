@@ -25,4 +25,27 @@ public class Citation {
     public String getPage() { return this.page; }
     public String getExtraText() { return this.extraText; }
     public Set<MultimediaReference> getAttachments() { return this.attachments; }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (!(object instanceof Citation)) {
+            return false;
+        }
+        final Citation that = (Citation)object;
+        return this.source.equals(that.source) && this.page.equals(that.page) && this.extraText.equals(that.extraText);
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+
+        h *= 37;
+        h += this.source.hashCode();
+        h *= 37;
+        h += this.page.hashCode();
+        h *= 37;
+        h += this.extraText.hashCode();
+
+        return h;
+    }
 }
