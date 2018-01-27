@@ -17,13 +17,10 @@ public class MultimediaReference
         this.uri = tryToParseAsUri(reference);
     }
 
-    // check for starting with a scheme, per RFC
-    private static final Pattern SCHEME = Pattern.compile("[a-zA-Z][a-zA-Z0-9+-.]*://.*");
-
     private static URI tryToParseAsUri(final String s) {
         try {
             return new URI(s);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             return null;
         }
     }
