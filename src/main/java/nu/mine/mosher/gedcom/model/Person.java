@@ -2,13 +2,7 @@ package nu.mine.mosher.gedcom.model;
 
 
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -293,12 +287,61 @@ public class Person implements Comparable<Person>
     }
 
     public List<Event> getEventsWithDittoedPlaces() {
+        /* first substitute ditto marks for matching places */
+        return shortenPlaces(dittoPlaces());
+    }
+
+    private static ArrayList<Event> shortenPlaces(final ArrayList<Event> places) {
+        final ArrayList<Event> r = new ArrayList<>(places.size());
+
+        /* build map of short names, to ensure no dups */
+        final Map<String,String> mapPlaceToShort = new HashMap<>();
+        final Map<String,String> mapShortToPlace = new HashMap<>();
+        final Set<String> dupsShort = new HashSet<>();
+        for (final Event e : places) {
+            String place = e.getPlace();
+            /* skip dittoed places and other short names */
+            if (place.length() > 4) {
+                final String sh = shortenPlace(place);
+                if (!dupsShort.contains(sh)) {
+                    if (mapShortToPlace.containsKey(sh) && !mapShortToPlace.get(sh).equals(place)) {
+                        mapPlaceToShort.remove(mapShortToPlace.get(sh));
+                        mapShortToPlace.remove(sh);
+                        dupsShort.add(sh);
+                    } else {
+                        mapShortToPlace.put(sh, place);
+                        mapPlaceToShort.put(place, sh);
+                    }
+                }
+            }
+        }
+
+        /* now do the actual substitutions */
+        final Set<String> seen = new HashSet<>();
+        for (final Event e : places) {
+            final String place = e.getPlace();
+            if (seen.contains(place) && mapPlaceToShort.containsKey(place)) {
+                r.add(new Event(e.getType(), e.getDate(), mapPlaceToShort.get(place), e.getNote(), e.getCitations()));
+            } else {
+                r.add(e);
+                seen.add(place);
+            }
+        }
+
+        return r;
+    }
+
+    private static String shortenPlace(final String place) {
+        return place.split(",", 2)[0];
+    }
+
+    public ArrayList<Event> dittoPlaces() {
         final ArrayList<Event> r = new ArrayList<>(this.rEvent.size());
         String placePrev = UUID.randomUUID().toString();
         String place;
         for (final Event e : this.rEvent) {
             if (e.getPlace().equals(placePrev) && !e.getPlace().isEmpty()) {
-                place = "\u201D";
+                place = "\u00A0\u201D";
             } else {
                 place = e.getPlace();
                 placePrev = place;
