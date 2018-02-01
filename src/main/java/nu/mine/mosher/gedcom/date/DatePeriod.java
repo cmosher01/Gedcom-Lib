@@ -16,6 +16,11 @@ public class DatePeriod implements Comparable<DatePeriod>
     private final DateRange dateEnd;
 
     /**
+     * Represents an unknown date (Jan. 1, 9999 BC to Dec. 31, 9999 AD)
+     */
+    public static final DatePeriod UNKNOWN = new DatePeriod(DateRange.UNKNOWN);
+
+    /**
      * Degenerate (but also nominal) case of a period lasting just one day.
      * @param date the single date
      */

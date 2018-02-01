@@ -1,5 +1,7 @@
 package nu.mine.mosher.gedcom.model;
 
+import java.net.URI;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
@@ -12,19 +14,25 @@ public class Citation {
     private final String page;
     private final String extraText;
     private final Set<MultimediaReference> attachments;
+    private final Set<URI> links;
+    private final AncestryPersona apid;
 
-    public Citation(final Source source, final String page, final String extraText, final Set<MultimediaReference> attachments)
+    public Citation(final Source source, final String page, final String extraText, final Set<MultimediaReference> attachments, final Set<URI> links, final AncestryPersona apid)
     {
         this.source = source;
         this.page = page;
         this.extraText = extraText;
         this.attachments = unmodifiableSet(attachments);
+        this.links = unmodifiableSet(links);
+        this.apid = apid;
     }
 
     public Source getSource() { return this.source; }
     public String getPage() { return this.page; }
     public String getExtraText() { return this.extraText; }
     public Set<MultimediaReference> getAttachments() { return this.attachments; }
+    public Set<URI> getLinks() { return this.links; }
+    public Optional<AncestryPersona> getApid() { return Optional.ofNullable(this.apid); }
 
     @Override
     public boolean equals(final Object object) {

@@ -1,7 +1,7 @@
 package nu.mine.mosher.gedcom.model;
 
 import java.io.StringReader;
-import java.nio.file.Path;
+import java.net.URI;
 import java.text.Collator;
 import java.util.*;
 
@@ -380,11 +380,45 @@ public class Loader {
                 final String page = getSourcePtPage(node);
                 final String text = getSourcePtText(node);
                 final Set<MultimediaReference> attachments = getSourcePtAttachments(node);
-                citations.add(new Citation(source, page, text, attachments));
+                final Set<URI> links = getSourcePtLinks(node);
+                final Optional<AncestryPersona> apid = getSourcePtApid(node);
+                citations.add(new Citation(source, page, text, attachments, links, thru(apid)));
             }
         }
-        // TODO handle case of date == null
         return new Event(whichEvent, date, place, note, citations);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static<T> T thru(final Optional<T> v) {
+        return v.orElse(null);
+    }
+
+    private static Optional<AncestryPersona> getSourcePtApid(final TreeNode<GedcomLine> node) {
+        for (final TreeNode<GedcomLine> apid : node) {
+            if (apid.getObject().getTagString().equals("_APID")) {
+                final String v = apid.getObject().getValue();
+                return AncestryPersona.of(v);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Set<URI> getSourcePtLinks(final TreeNode<GedcomLine> node) {
+        final Set<URI> r = new HashSet<>();
+        node.forAll(link -> {
+            if (link.getObject().getTagString().equals("_LINK")) {
+                addIfUri(r, link);
+            }
+        });
+        return r;
+    }
+
+    private static void addIfUri(final Set<URI> r, final TreeNode<GedcomLine> link) {
+        try {
+            r.add(new URI(link.getObject().getValue()));
+        } catch (final Throwable ignore) {
+            // best-effort only
+        }
     }
 
     private Set<MultimediaReference> getSourcePtAttachments(final TreeNode<GedcomLine> node) {

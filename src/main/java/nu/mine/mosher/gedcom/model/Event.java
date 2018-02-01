@@ -1,11 +1,9 @@
 package nu.mine.mosher.gedcom.model;
 
 import nu.mine.mosher.gedcom.date.DatePeriod;
+import nu.mine.mosher.gedcom.date.DateRange;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /*
  * Created on 2006-10-08.
@@ -21,7 +19,7 @@ public class Event implements Comparable<Event>
 	public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations)
 	{
 		this.type = type;
-		this.date = date;
+        this.date = Optional.of(date).orElse(DatePeriod.UNKNOWN);
 		this.place = place;
 		this.note = note;
 		this.citations = Collections.unmodifiableList(new ArrayList<>(citations));
