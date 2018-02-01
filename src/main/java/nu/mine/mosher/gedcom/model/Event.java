@@ -19,7 +19,7 @@ public class Event implements Comparable<Event>
 	public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations)
 	{
 		this.type = type;
-        this.date = Optional.of(date).orElse(DatePeriod.UNKNOWN);
+        this.date = Optional.ofNullable(date).orElse(DatePeriod.UNKNOWN);
 		this.place = place;
 		this.note = note;
 		this.citations = Collections.unmodifiableList(new ArrayList<>(citations));
