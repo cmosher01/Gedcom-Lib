@@ -256,7 +256,7 @@ public class Loader {
             final GedcomTag tag = line.getTag();
             if (uuid == null && hasUuidTag(line)) {
                 uuid = parseUuid(node);
-            } else if (GedcomTag.setIndividualEvent.contains(tag) || GedcomTag.setIndividualAttribute.contains(tag) || tag.equals(GedcomTag.NAME)) {
+            } else if (isEventish(tag)) {
                 if (tag.equals(GedcomTag.NAME)) {
                     if (name.isEmpty()) {
                         // grab out the name (just the first one)
@@ -280,6 +280,14 @@ public class Loader {
         }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
+    }
+
+    private boolean isEventish(final GedcomTag tag) {
+        return
+            GedcomTag.setIndividualEvent.contains(tag) ||
+            GedcomTag.setIndividualAttribute.contains(tag) ||
+            tag.equals(GedcomTag.NAME) ||
+            tag.equals(GedcomTag.SEX);
     }
 
     private static boolean hasUuidTag(final GedcomLine line) {
@@ -515,6 +523,8 @@ public class Loader {
 
         if (tag.equals(GedcomTag.NAME)) {
             eventName = "name";
+        } else if (tag.equals(GedcomTag.SEX)) {
+            eventName = "sex";
         } else if (tag.equals(GedcomTag.EVEN)) {
             final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
             getChildren(node, rNode);
@@ -535,7 +545,20 @@ public class Loader {
         if (value.isEmpty()) {
             return eventName;
         }
+
+        if (tag.equals(GedcomTag.SEX)) {
+            return eventName + ": " + getSexName(value);
+        }
         return eventName + ": " + value;
+    }
+
+    private static String getSexName(final String value) {
+        switch (value) {
+            case "M": return "male";
+            case "F": return "female";
+            case "U": return "unknown";
+            default : return value;
+        }
     }
 
     private static void buildFamily(final Person husb, final Person wife, final ArrayList<Person> rChild, final ArrayList<Event> rEvent) {
