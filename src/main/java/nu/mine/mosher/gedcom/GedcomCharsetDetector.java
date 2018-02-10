@@ -1,7 +1,7 @@
 package nu.mine.mosher.gedcom;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
+//import com.ibm.icu.text.CharsetDetector;
+//import com.ibm.icu.text.CharsetMatch;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -15,12 +15,13 @@ import java.util.regex.Pattern;
 
 import static nu.mine.mosher.logging.Jul.log;
 
-public class GedcomCharsetDetector {
+@Deprecated
+class GedcomCharsetDetector {
     private static final Logger log = Logger.getLogger("");
 
     private final BufferedInputStream gedcom;
 
-    public GedcomCharsetDetector(final BufferedInputStream gedcom) {
+    private GedcomCharsetDetector(final BufferedInputStream gedcom) {
         this.gedcom = gedcom;
     }
 
@@ -54,51 +55,51 @@ public class GedcomCharsetDetector {
         }
 
 
-        final CharsetDetector det = new CharsetDetector();
-        det.enableInputFilter(true);
-
-        final Set<String> icu4jDetectable = new HashSet<>(Arrays.asList(CharsetDetector.getAllDetectableCharsets()));
-        if (icu4jDetectable.contains(use)) {
-            log.info("Using " + use + " as declared character encoding hint for ICU4J detection.");
-            det.setDeclaredEncoding(use);
-        } else {
-            use = interpretedDeclaredEncoding;
-        }
-
-        boolean skip = false;
-        byte[] sample = getSampleBytes(this.gedcom);
-        if (sample.length > 0) {
-            log.info("Using sample " + sample.length + " bytes for ICU4J detection.");
-            det.setText(sample);
-        } else {
-            log.warning("Could not find any bytes out of range 0-127. Finding NAME records for ICU4J detection.");
-            sample = getSampleNameBytes(this.gedcom);
-            if (sample.length > 0) {
-                log.info("Using sample " + sample.length + " bytes from NAME records for ICU4J detection.");
-                det.setText(sample);
-            } else {
-                log.warning("Could not find any NAME records for ICU4J detection.");
-                skip = true;
-            }
-        }
-
-        if (!skip) {
-            final CharsetMatch in = det.detect();
-            log.info("ICU4J detected character encoding " + in.getName() + ", with " + Integer.toString(in.getConfidence()) + "% confidence.");
-
-            final int confidenceThreshold;
-            if (icu4jDetectable.contains(interpretedDeclaredEncoding)) {
-                confidenceThreshold = 52;
-            } else {
-                confidenceThreshold = 98;
-            }
-            if (in.getConfidence() >= confidenceThreshold) {
-                log.info("ICU4J confidence is above threshold of "+Integer.toString(confidenceThreshold)+"%.");
-                use = in.getName();
-            } else {
-                log.warning("ICU4J confidence is BELOW threshold of "+Integer.toString(confidenceThreshold)+"%; ignoring.");
-            }
-        }
+//        final CharsetDetector det = new CharsetDetector();
+//        det.enableInputFilter(true);
+//
+//        final Set<String> icu4jDetectable = new HashSet<>(Arrays.asList(CharsetDetector.getAllDetectableCharsets()));
+//        if (icu4jDetectable.contains(use)) {
+//            log.info("Using " + use + " as declared character encoding hint for ICU4J detection.");
+//            det.setDeclaredEncoding(use);
+//        } else {
+//            use = interpretedDeclaredEncoding;
+//        }
+//
+//        boolean skip = false;
+//        byte[] sample = getSampleBytes(this.gedcom);
+//        if (sample.length > 0) {
+//            log.info("Using sample " + sample.length + " bytes for ICU4J detection.");
+//            det.setText(sample);
+//        } else {
+//            log.warning("Could not find any bytes out of range 0-127. Finding NAME records for ICU4J detection.");
+//            sample = getSampleNameBytes(this.gedcom);
+//            if (sample.length > 0) {
+//                log.info("Using sample " + sample.length + " bytes from NAME records for ICU4J detection.");
+//                det.setText(sample);
+//            } else {
+//                log.warning("Could not find any NAME records for ICU4J detection.");
+//                skip = true;
+//            }
+//        }
+//
+//        if (!skip) {
+//            final CharsetMatch in = det.detect();
+//            log.info("ICU4J detected character encoding " + in.getName() + ", with " + Integer.toString(in.getConfidence()) + "% confidence.");
+//
+//            final int confidenceThreshold;
+//            if (icu4jDetectable.contains(interpretedDeclaredEncoding)) {
+//                confidenceThreshold = 52;
+//            } else {
+//                confidenceThreshold = 98;
+//            }
+//            if (in.getConfidence() >= confidenceThreshold) {
+//                log.info("ICU4J confidence is above threshold of "+Integer.toString(confidenceThreshold)+"%.");
+//                use = in.getName();
+//            } else {
+//                log.warning("ICU4J confidence is BELOW threshold of "+Integer.toString(confidenceThreshold)+"%; ignoring.");
+//            }
+//        }
 
         if (!isLegalJavaCharset(use)) {
             use = "UTF-8";

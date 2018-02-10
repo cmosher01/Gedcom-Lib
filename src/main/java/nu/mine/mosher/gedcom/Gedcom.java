@@ -104,7 +104,8 @@ public final class Gedcom {
     public static GedcomTree readFile(final BufferedInputStream streamInput, Charset charsetForce) throws
         IOException, InvalidLevel {
         if (charsetForce == null) {
-            charsetForce = new GedcomCharsetDetector(streamInput).detect();
+//            charsetForce = new GedcomCharsetDetector(streamInput).detect();
+            charsetForce = new GedcomEncodingDetector(streamInput).detect();
         } else {
             log().info("Forcing input character encoding to " + charsetForce.name());
         }
