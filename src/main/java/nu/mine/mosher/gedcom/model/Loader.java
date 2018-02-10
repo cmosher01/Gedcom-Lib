@@ -550,6 +550,10 @@ public class Loader {
             eventName = EventNames.getName(tag);
         }
 
+        if (tag.equals(GedcomTag.NOTE)) {
+            return eventName;
+        }
+
         final String value = node.getObject().getValue();
         if (value.isEmpty()) { // TODO: what if it's a pointer?
             return eventName;
