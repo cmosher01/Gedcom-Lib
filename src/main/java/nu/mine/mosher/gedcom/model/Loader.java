@@ -286,6 +286,7 @@ public class Loader {
         return
             GedcomTag.setIndividualEvent.contains(tag) ||
             GedcomTag.setIndividualAttribute.contains(tag) ||
+            tag.equals(GedcomTag.NOTE) ||
             tag.equals(GedcomTag.NAME) ||
             tag.equals(GedcomTag.SEX);
     }
@@ -366,11 +367,11 @@ public class Loader {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
             if (tag.equals(GedcomTag.DATE)) {
-                final String sDate = line.getValue();
+                final String sDate = line.getValue().trim();
                 final GedcomDateValueParser parser = new GedcomDateValueParser(new StringReader(sDate));
                 try {
                     date = parser.parse();
-                } catch (final ParseException | DatesOutOfOrder | TokenMgrError e) {
+                } catch (final ParseException | DatesOutOfOrder | TokenMgrError | IllegalStateException e) {
                     System.err.println("Error while parsing \"" + sDate + "\"");
                     e.printStackTrace();
                     date = null;
@@ -392,6 +393,9 @@ public class Loader {
                 final Optional<AncestryPersona> apid = getSourcePtApid(node);
                 citations.add(new Citation(source, page, text, attachments, links, thru(apid)));
             }
+        }
+        if (nodeEvent.getObject().getTag().equals(GedcomTag.NOTE)) {
+            note = parseNote(nodeEvent);
         }
         return new Event(whichEvent, date, place, note, citations);
     }
@@ -509,6 +513,9 @@ public class Loader {
         if (dateInformation == null) {
             return false;
         }
+        if (dateInformation.equals(DatePeriod.UNKNOWN)) {
+            return false;
+        }
 
         final Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, -90);
@@ -523,6 +530,8 @@ public class Loader {
 
         if (tag.equals(GedcomTag.NAME)) {
             eventName = "name";
+        } else if (tag.equals(GedcomTag.NOTE)) {
+            eventName = "note";
         } else if (tag.equals(GedcomTag.SEX)) {
             eventName = "sex";
         } else if (tag.equals(GedcomTag.EVEN)) {
@@ -542,7 +551,7 @@ public class Loader {
         }
 
         final String value = node.getObject().getValue();
-        if (value.isEmpty()) {
+        if (value.isEmpty()) { // TODO: what if it's a pointer?
             return eventName;
         }
 
