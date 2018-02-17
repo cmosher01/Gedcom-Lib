@@ -9,8 +9,16 @@ import nu.mine.mosher.gedcom.date.YMD;
 import nu.mine.mosher.gedcom.date.DateRange;
 import nu.mine.mosher.gedcom.date.DatePeriod;
 @ SuppressWarnings("all") public class GedcomDateValueParser {
-  public DatePeriod parse() throws ParseException, DateRange.DatesOutOfOrder {
-    return DateValue();
+  public DatePeriod parse() throws ParseException {
+    try {
+      return DateValue();
+    } catch (final ParseException e) {
+      throw e;
+    } catch (final Throwable w) {
+      final ParseException e = new ParseException();
+      e.initCause(w);
+      throw e;
+    }
   }
 
   private static YMD julianToGregorian(final YMD ymdJulian) {

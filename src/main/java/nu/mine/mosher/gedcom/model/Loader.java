@@ -371,7 +371,7 @@ public class Loader {
                 final GedcomDateValueParser parser = new GedcomDateValueParser(new StringReader(sDate));
                 try {
                     date = parser.parse();
-                } catch (final ParseException | DatesOutOfOrder | TokenMgrError | IllegalStateException e) {
+                } catch (final Exception  e) {
                     System.err.println("Error while parsing \"" + sDate + "\"");
                     e.printStackTrace();
                     date = null;
