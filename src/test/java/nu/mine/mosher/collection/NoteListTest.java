@@ -14,8 +14,8 @@ public class NoteListTest {
         assertEquals(2, uut.note("quux"));
         assertEquals(1, uut.note("foobar"));
 
-        assertEquals("quux", uut.note(2));
-        assertEquals("foobar", uut.note(1));
+        assertEquals("quux", uut.getNote(2));
+        assertEquals("foobar", uut.getNote(1));
 
         assertEquals(2, uut.size());
     }
@@ -29,7 +29,7 @@ public class NoteListTest {
     @Test
     public void outOfBounds() {
         final NoteList uut = new NoteList();
-        assertThrows(IndexOutOfBoundsException.class, () -> uut.note(999));
+        assertThrows(IndexOutOfBoundsException.class, () -> uut.getNote(999));
     }
 
     @Test
