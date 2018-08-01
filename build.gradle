@@ -5,7 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url = URI.create('http://mosher.mine.nu/nexus/repository/maven-public/')
+        url = URI.create('https://mosher.mine.nu/nexus/repository/maven-public/')
     }
 }
 
