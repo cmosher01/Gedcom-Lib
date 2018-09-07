@@ -8,21 +8,27 @@ import java.util.*;
 /*
  * Created on 2006-10-08.
  */
-public class Event implements Comparable<Event>
+public class Event implements Comparable<Event>, Privatizable
 {
 	private final String type;
 	private final DatePeriod date;
 	private final String place;
 	private final String note;
 	private final List<Citation> citations;
+    private final boolean isPrivate;
 
-	public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations)
+    public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations)
+    {
+        this(type,date,place,note,citations,false);
+    }
+	public Event(final String type, final DatePeriod date, final String place, final String note, final List<Citation> citations, final boolean isPrivate)
 	{
 		this.type = type;
         this.date = Optional.ofNullable(date).orElse(DatePeriod.UNKNOWN);
 		this.place = place;
 		this.note = note;
 		this.citations = Collections.unmodifiableList(new ArrayList<>(citations));
+		this.isPrivate = isPrivate;
 	}
 
 	public String getType()
@@ -60,4 +66,9 @@ public class Event implements Comparable<Event>
 		}
 		return this.date.compareTo(that.date);
 	}
+
+    @Override
+    public boolean isPrivate() {
+        return this.isPrivate;
+    }
 }

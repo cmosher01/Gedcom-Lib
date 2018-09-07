@@ -1,4 +1,5 @@
 package nu.mine.mosher.gedcom.model;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -6,67 +7,62 @@ import java.util.Collections;
 /*
  * Created on 2006-10-08.
  */
-public class Partnership implements Comparable<Partnership>
-{
-	private final ArrayList<Event> rEvent;
-	private final ArrayList<Person> rChild = new ArrayList<>();
+public class Partnership implements Comparable<Partnership>, Privatizable {
+    private final ArrayList<Event> rEvent;
+    private final ArrayList<Person> rChild = new ArrayList<>();
+    private final boolean isPrivate;
 
-	private Person partner;
+    private Person partner;
 
-	public Partnership(final ArrayList<Event> rEvent)
-	{
-		this.rEvent = rEvent;
+    public Partnership(final ArrayList<Event> rEvent) {
+        this(rEvent, false);
+    }
 
-		Collections.sort(this.rEvent);
-	}
+    public Partnership(final ArrayList<Event> rEvent, final boolean isPrivate) {
+        this.rEvent = rEvent;
+        this.isPrivate = isPrivate;
 
-	public void setPartner(final Person partner)
-	{
-		this.partner = partner;
-	}
+        Collections.sort(this.rEvent);
+    }
 
-	public Person getPartner()
-	{
-		return this.partner;
-	}
+    public void setPartner(final Person partner) {
+        this.partner = partner;
+    }
 
-	public ArrayList<Event> getEvents()
-	{
-		return this.rEvent;
-	}
+    public Person getPartner() {
+        return this.partner;
+    }
 
-	public ArrayList<Person> getChildren()
-	{
-		return this.rChild;
-	}
+    public ArrayList<Event> getEvents() {
+        return this.rEvent;
+    }
 
-	public void addChildren(final Collection<Person> rChildToAdd)
-	{
-		this.rChild.addAll(rChildToAdd);
+    public ArrayList<Person> getChildren() {
+        return this.rChild;
+    }
 
-		Collections.sort(this.rChild);
-	}
+    public void addChildren(final Collection<Person> rChildToAdd) {
+        this.rChild.addAll(rChildToAdd);
 
-	public boolean isPrivate()
-	{
-		return this.partner != null && this.partner.isPrivate();
-	}
+        Collections.sort(this.rChild);
+    }
 
-	@Override
-	public int compareTo(final Partnership that)
-	{
-		if (this.rEvent.isEmpty() && that.rEvent.isEmpty())
-		{
-			return 0;
-		}
-		if (!this.rEvent.isEmpty() && that.rEvent.isEmpty())
-		{
-			return -1;
-		}
-		if (this.rEvent.isEmpty() && !that.rEvent.isEmpty())
-		{
-			return +1;
-		}
-		return this.rEvent.get(0).compareTo(that.rEvent.get(0));
-	}
+    @Override
+    public boolean isPrivate() {
+        return this.isPrivate;
+    }
+
+    @Override
+    public int compareTo(final Partnership that) {
+        if (this.rEvent.isEmpty() && that.rEvent.isEmpty()) {
+            return 0;
+        }
+        if (!this.rEvent.isEmpty() && that.rEvent.isEmpty()) {
+            return -1;
+        }
+        if (this.rEvent.isEmpty() && !that.rEvent.isEmpty()) {
+            return +1;
+        }
+        return this.rEvent.get(0).compareTo(that.rEvent.get(0));
+    }
 }

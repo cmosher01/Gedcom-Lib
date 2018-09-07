@@ -17,7 +17,7 @@ import nu.mine.mosher.time.Time;
 /*
  * Created on 2006-10-08.
  */
-public class Person implements Comparable<Person>
+public class Person implements Comparable<Person>, Privatizable
 {
     private static final Pattern patternName = Pattern.compile("(.*)/(.*)/(.*)");
 
@@ -37,6 +37,7 @@ public class Person implements Comparable<Person>
 
     private Person father;
     private Person mother;
+    private boolean isPrivateParentage;
 
     /**
      * @param ID
@@ -271,6 +272,14 @@ public class Person implements Comparable<Person>
         this.mother = mother;
     }
 
+    public void setPrivateParentage(final boolean isPrivate) {
+        this.isPrivateParentage = isPrivate;
+    }
+
+    public boolean isPrivateParentage() {
+        return this.isPrivateParentage;
+    }
+
     public Person getFather()
     {
         return this.father;
@@ -321,7 +330,7 @@ public class Person implements Comparable<Person>
         for (final Event e : places) {
             final String place = e.getPlace();
             if (seen.contains(place) && mapPlaceToShort.containsKey(place)) {
-                r.add(new Event(e.getType(), e.getDate(), mapPlaceToShort.get(place), e.getNote(), e.getCitations()));
+                r.add(new Event(e.getType(), e.getDate(), mapPlaceToShort.get(place), e.getNote(), e.getCitations(), e.isPrivate()));
             } else {
                 r.add(e);
                 seen.add(place);
@@ -346,7 +355,7 @@ public class Person implements Comparable<Person>
                 place = e.getPlace();
                 placePrev = place;
             }
-            r.add(new Event(e.getType(),e.getDate(),place,e.getNote(),e.getCitations()));
+            r.add(new Event(e.getType(),e.getDate(),place,e.getNote(),e.getCitations(),e.isPrivate()));
         }
         return r;
     }
@@ -388,6 +397,7 @@ public class Person implements Comparable<Person>
         return this.ID;
     }
 
+    @Override
     public boolean isPrivate()
     {
         return this.isPrivate;
