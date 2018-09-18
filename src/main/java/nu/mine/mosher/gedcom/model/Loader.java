@@ -13,6 +13,8 @@ import nu.mine.mosher.gedcom.date.DatePeriod;
 import nu.mine.mosher.time.Time;
 import nu.mine.mosher.collection.TreeNode;
 
+import static nu.mine.mosher.logging.Jul.log;
+
 /**
  * Parses the given <code>GedcomTree</code> into <code>Person</code> objects.
  * <p>
@@ -291,7 +293,7 @@ public class Loader {
             name = "[unknown]";
         }
         if (uuid == null) {
-            //System.err.println("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
+            log().warning("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
         }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
@@ -408,8 +410,10 @@ public class Loader {
                 try {
                     date = parser.parse();
                 } catch (final Exception  e) {
-                    System.err.println("Error while parsing \"" + sDate + "\"");
-                    e.printStackTrace();
+                    if (!sDate.isEmpty()) {
+                        System.err.println("Error while parsing \"" + sDate + "\"");
+                        e.printStackTrace();
+                    }
                     date = null;
                 }
             } else if (tag.equals(GedcomTag.PLAC)) {
@@ -448,7 +452,8 @@ public class Loader {
      * If value is "locked, then reutrn false (locked data is assumed non-private,
      * otherwise it wouldn't need to be locked).
      * If value is "privacy", it indicates that the data is not included in the
-     * GEDCOM file, so it doesn't need to be privatized, return false;
+     * GEDCOM file; however, Family Tree Maker, for one, includes the
+     * data; therefore, fail-safe and return true.
      * Values are compared ignoring upper-/lower-case.
      *
      * WARNING: this library does not automatically privatize any data. All
@@ -459,7 +464,7 @@ public class Loader {
      */
     private static boolean isPrivateRestriction(String valueOfResnLine) {
         final String upperValue = valueOfResnLine.toUpperCase();
-        return !(upperValue.equals("LOCKED") || upperValue.equals("PRIVACY"));
+        return !upperValue.equals("LOCKED");
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
