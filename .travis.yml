@@ -1,2 +1,5 @@
 language: java
 dist: trusty
+sudo: false
+jdk:
+  - openjdk10
