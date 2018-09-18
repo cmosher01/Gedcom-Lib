@@ -48,3 +48,4 @@ test {
 group = 'nu.mine.mosher.gedcom'
 version = '1.0.1-SNAPSHOT'
 mainClassName = 'nu.mine.mosher.gedcom.Gedcom'
+sourceCompatibility = '1.9'
