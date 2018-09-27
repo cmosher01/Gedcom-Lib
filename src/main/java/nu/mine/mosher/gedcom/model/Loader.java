@@ -421,7 +421,7 @@ public class Loader {
             } else if (tag.equals(GedcomTag.NOTE)) {
                 final String n = parseNote(node);
                 if (!note.isEmpty() && !n.isEmpty()) {
-                    note += "/n";
+                    note += "\n";
                 }
                 note += n;
             } else if (tag.equals(GedcomTag.SOUR)) {
