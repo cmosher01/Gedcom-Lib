@@ -1,10 +1,10 @@
 package nu.mine.mosher.gedcom.model;
 
-import nu.mine.mosher.collection.TreeNode;
-import nu.mine.mosher.gedcom.GedcomLine;
+import nu.mine.mosher.logging.Jul;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
  */
 public class AncestryPersona {
     private final int db;
-    private final int indi;
+    private final long indi;
     private final URI link;
 
 
 
-    public AncestryPersona(final int db, final int indi) {
+    public AncestryPersona(final int db, final long indi) {
         this.db = db;
         this.indi = indi;
         this.link = buildLink(db, indi);
@@ -30,11 +30,13 @@ public class AncestryPersona {
     public static Optional<AncestryPersona> of(final String apid) {
         final Matcher m = PAT_APID.matcher(apid);
         if (!m.matches()) {
+            Jul.log().log(Level.WARNING, "Unknown _APID format: "+apid);
             return Optional.empty();
         }
         try {
-            return Optional.of(new AncestryPersona(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3))));
+            return Optional.of(new AncestryPersona(Integer.parseInt(m.group(2)), Long.parseLong(m.group(3))));
         } catch (final Throwable ignore) {
+            Jul.log().log(Level.WARNING, "Unknown _APID format: "+apid, ignore);
             return Optional.empty();
         }
     }
@@ -45,7 +47,7 @@ public class AncestryPersona {
         return this.db;
     }
 
-    public int getIndi() {
+    public long getIndi() {
         return this.indi;
     }
 
@@ -59,7 +61,7 @@ public class AncestryPersona {
 
 
 
-    private URI buildLink(int db, int indi) {
+    private static URI buildLink(int db, long indi) {
         try {
             return new URI(formatLink(db, indi));
         } catch (final Throwable e) {
@@ -67,7 +69,7 @@ public class AncestryPersona {
         }
     }
 
-    private static String formatLink(int db, int indi) {
+    private static String formatLink(int db, long indi) {
         return String.format("http://search.ancestry.com/cgi-bin/sse.dll?indiv=1&dbid=%d&h=%d", db, indi);
     }
 }
