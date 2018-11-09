@@ -1,4 +1,4 @@
-FROM gradle:alpine
+FROM gradle:jdk10
 
 MAINTAINER Christopher A. Mosher <cmosher01@gmail.com>
 
