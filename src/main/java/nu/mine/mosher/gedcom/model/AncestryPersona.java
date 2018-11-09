@@ -25,7 +25,7 @@ public class AncestryPersona {
         this.link = buildLink(db, indi);
     }
 
-    private static final Pattern PAT_APID = Pattern.compile("(\\d+),(\\d+)::(\\d+)");
+    private static final Pattern PAT_APID = Pattern.compile("(\\d+),(\\d+)::(\\d+)(.*)");
 
     public static Optional<AncestryPersona> of(final String apid) {
         final Matcher m = PAT_APID.matcher(apid);
