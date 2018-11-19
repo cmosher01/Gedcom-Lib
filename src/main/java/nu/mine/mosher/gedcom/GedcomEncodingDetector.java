@@ -47,7 +47,7 @@ public class GedcomEncodingDetector {
 
         final Charset charsetResult;
         if (charsetDetected.isPresent() && charsetDeclared.isPresent()) {
-            charsetResult = resolveConflictinCharsets(charsetDetected.get(), charsetDeclared.get());
+            charsetResult = resolveConflictingCharsets(charsetDetected.get(), charsetDeclared.get());
         } else if (charsetDetected.isPresent()) {
             charsetResult = charsetDetected.get();
         } else if (charsetDeclared.isPresent()) {
@@ -61,7 +61,7 @@ public class GedcomEncodingDetector {
         return charsetResult;
     }
 
-    private Charset resolveConflictinCharsets(final Charset detected, final Charset declared) {
+    private Charset resolveConflictingCharsets(final Charset detected, final Charset declared) {
         if (detected.equals(declared)) {
             return detected;
         }
@@ -101,6 +101,7 @@ public class GedcomEncodingDetector {
                     return prescreened;
                 }
             }
+            first = false;
             detector.handleData(buf, 0, nread);
         }
 
