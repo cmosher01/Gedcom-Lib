@@ -19,7 +19,7 @@ public class Partnership implements Comparable<Partnership>, Privatizable {
     }
 
     public Partnership(final ArrayList<Event> rEvent, final boolean isPrivate) {
-        this.rEvent = rEvent;
+        this.rEvent = new ArrayList<>(rEvent);
         this.isPrivate = isPrivate;
 
         Collections.sort(this.rEvent);
