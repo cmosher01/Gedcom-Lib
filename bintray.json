@@ -1,0 +1,23 @@
+{
+    "package": {
+        "name": "gedcom-lib",
+        "repo": "maven",
+        "subject": "cmosher01",
+        "vcs_url": "https://github.com/cmosher01/Gedcom-Lib",
+        "licenses": [
+            "GPL-3.0"
+        ]
+    },
+    "version": {
+        "name": "1.1.0"
+    },
+    "files": [ {
+            "includePattern": "build/libs/(.*)",
+            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.1.0/$1"
+        }, {
+            "includePattern": "build/publications/maven/pom-default.xml",
+            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.1.0/gedcom-lib-1.1.0.pom"
+        }
+    ],
+    "publish": true
+}
