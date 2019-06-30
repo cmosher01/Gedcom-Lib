@@ -2,7 +2,11 @@
 
 **Gedcom-Lib** is a Java library and framework for parsing GEDCOM files.
 
-This software is distributed under the [GPLv3](http://www.gnu.org/licenses/gpl-3.0-standalone.html) license.
+Copyright © 2004–2019, Christopher Alan Mosher, Shelton, Connecticut, USA, <cmosher01@gmail.com>.
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CVSSQ2BWDCKQ2)
+[![License](https://img.shields.io/github/license/cmosher01/Gedcom-Lib.svg)](https://www.gnu.org/licenses/gpl.html)
+
 
 ## Usage
 
@@ -10,13 +14,12 @@ For `gradle` builds:
 
 ```groovy
 repositories {
-    maven {
-        url 'http://mosher.mine.nu/nexus/repository/maven-public/'
-    }
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    compile group: 'nu.mine.mosher.gedcom', name: 'gedcom-lib', version: 'latest.integration'
+    implementation group: 'nu.mine.mosher.gedcom', name: 'gedcom-lib', version: 'latest.integration'
 }
 ```
 
