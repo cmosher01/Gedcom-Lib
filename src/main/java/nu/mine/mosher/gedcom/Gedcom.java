@@ -2,6 +2,7 @@ package nu.mine.mosher.gedcom;
 
 
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
+import nu.mine.mosher.gedcom.model.Loader;
 import nu.mine.mosher.mopper.ArgParser;
 
 import java.io.*;
@@ -28,7 +29,22 @@ public final class Gedcom {
 
 
     public static void main(final String... args) throws InvalidLevel, IOException  {
-        new Gedcom(new ArgParser<>(new GedcomOptions()).parse(args), g -> true).main();
+        final GedcomOptions options = new ArgParser<>(new GedcomOptions()).parse(args);
+
+        final Processor model;
+        if (options.model) {
+            model = new Processor() {
+                @Override
+                public boolean process(GedcomTree tree) {
+                    final Loader loader = new Loader(tree, "");
+                    loader.parse();
+                    return true;
+                }
+            };
+        } else {
+            model = g-> true;
+        }
+        new Gedcom(options, model).main();
         System.out.flush();
         System.err.flush();
     }
@@ -41,7 +57,7 @@ public final class Gedcom {
 
 
     public void main() throws IOException, InvalidLevel {
-        main((File)null);
+        main(this.options.input);
     }
 
     public void main(final File gedcom) throws InvalidLevel, IOException {

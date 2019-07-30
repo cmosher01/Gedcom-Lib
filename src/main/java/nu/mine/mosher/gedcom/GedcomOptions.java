@@ -3,6 +3,7 @@ package nu.mine.mosher.gedcom;
 import nu.mine.mosher.logging.Jul;
 import nu.mine.mosher.mopper.Optional;
 
+import java.io.File;
 import java.nio.charset.Charset;
 
 import static nu.mine.mosher.logging.Jul.log;
@@ -16,6 +17,8 @@ public class GedcomOptions {
     public Charset encoding;
     public Integer concToWidth;
     public boolean help = false;
+    public File input = null;
+    public boolean model = false;
 
     public void h() {
         help();
@@ -103,5 +106,13 @@ public class GedcomOptions {
         if (this.concToWidth <= 0) {
             throw new IllegalArgumentException("width specified as " + width + ", but must be greater than 0");
         }
+    }
+
+    public void input(final String gedcom) {
+        this.input = new File(gedcom);
+    }
+
+    public void model() {
+        this.model = true;
     }
 }
