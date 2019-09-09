@@ -61,4 +61,4 @@ publishing {
 group = 'nu.mine.mosher.gedcom'
 mainClassName = 'nu.mine.mosher.gedcom.Gedcom'
 sourceCompatibility = '1.9'
-version = '1.1.0'
+version = '1.1.1'

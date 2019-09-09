@@ -441,6 +441,14 @@ public class Loader {
         if (nodeEvent.getObject().getTag().equals(GedcomTag.NOTE)) {
             note = parseNote(nodeEvent);
         }
+
+        if (!nodeEvent.getObject().getValue().isEmpty() && !nodeEvent.getObject().getTag().equals(GedcomTag.SEX)) {
+            if (!note.isEmpty()) {
+                note += "\n";
+            }
+            note += nodeEvent.getObject().getValue();
+        }
+
         return new Event(whichEvent, date, place, note, citations, isPrivate || isForcePrivate);
     }
 
@@ -621,16 +629,11 @@ public class Loader {
             return eventName;
         }
 
-        final String value = node.getObject().getValue();
-        if (value.isEmpty()) { // TODO: what if it's a pointer?
-            return eventName;
+        if (tag.equals(GedcomTag.SEX)) {
+            return eventName + ": " + getSexName(node.getObject().getValue());
         }
 
-        if (tag.equals(GedcomTag.SEX)) {
-            return eventName + ": " + getSexName(value);
-        }
-        // TODO ? sometimes value gets too long for display ?
-        return eventName + ": " + value;
+        return eventName;
     }
 
     private static String getSexName(final String value) {
