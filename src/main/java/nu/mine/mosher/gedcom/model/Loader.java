@@ -442,7 +442,9 @@ public class Loader {
             note = parseNote(nodeEvent);
         }
 
-        if (!nodeEvent.getObject().getValue().isEmpty() && !nodeEvent.getObject().getTag().equals(GedcomTag.SEX)) {
+        if (!nodeEvent.getObject().getValue().isEmpty() &&
+            !nodeEvent.getObject().getTag().equals(GedcomTag.NAME) &&
+            !nodeEvent.getObject().getTag().equals(GedcomTag.SEX)) {
             if (!note.isEmpty()) {
                 note += "\n";
             }
@@ -625,8 +627,8 @@ public class Loader {
             eventName = EventNames.getName(tag);
         }
 
-        if (tag.equals(GedcomTag.NOTE)) {
-            return eventName;
+        if (tag.equals(GedcomTag.NAME)) {
+            return eventName + ": " + node.getObject().getValue();
         }
 
         if (tag.equals(GedcomTag.SEX)) {
