@@ -1,15 +1,15 @@
 package nu.mine.mosher.gedcom.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
  * Created on 2006-10-08.
  */
 public class Partnership implements Comparable<Partnership>, Privatizable {
     private final ArrayList<Event> rEvent;
-    private final ArrayList<Person> rChild = new ArrayList<>();
+    private List<ParentChildRelation> rChild = new ArrayList<>();
     private final boolean isPrivate;
 
     private Person partner;
@@ -37,14 +37,29 @@ public class Partnership implements Comparable<Partnership>, Privatizable {
         return this.rEvent;
     }
 
+    /**
+     * @deprecated use getChildRelations
+     * @return
+     */
+    @Deprecated
     public ArrayList<Person> getChildren() {
-        return this.rChild;
+        return new ArrayList<>(this.rChild.stream().map(ParentChildRelation::getOther).collect(Collectors.toList()));
+    }
+    public ArrayList<ParentChildRelation> getChildRelations() {
+        return new ArrayList<>(this.rChild);
     }
 
+    /**
+     * @deprecated use setChildRelations
+     * @param rChildToAdd
+     */
+    @Deprecated
     public void addChildren(final Collection<Person> rChildToAdd) {
-        this.rChild.addAll(rChildToAdd);
-
+        this.rChild.addAll(rChildToAdd.stream().map(ParentChildRelation::of).collect(Collectors.toList()));
         Collections.sort(this.rChild);
+    }
+    public void addChildRelations(final Collection<ParentChildRelation> newFullSet) {
+        this.rChild = new ArrayList<>(newFullSet);
     }
 
     @Override

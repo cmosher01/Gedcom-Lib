@@ -37,7 +37,8 @@ public class Loader {
     private Person first;
     private final List<Person> people = new ArrayList<>(256);
     private final Collator sorter;
-    private String description;
+    private String description = "";
+    private String copyright = "";
 
 
     public Loader(final GedcomTree gedcom, final String filename) {
@@ -133,6 +134,10 @@ public class Loader {
         return this.description;
     }
 
+    public String getCopyright() {
+        return this.copyright;
+    }
+
     public Person getFirstPerson() {
         return this.first;
     }
@@ -203,6 +208,8 @@ public class Loader {
             final GedcomTag tag = line.getTag();
             if (tag.equals(GedcomTag.NOTE)) {
                 this.description = line.getValue();
+            } else if (line.getTag().equals(GedcomTag.COPR)) {
+                this.copyright = line.getValue();
             } else if (line.getTagString().equals("_ROOT")) {
                 root = line.getPointer();
             }
@@ -329,17 +336,21 @@ public class Loader {
     private void parseFamily(final TreeNode<GedcomLine> nodeFam, final Map<String, Person> mapIDtoPerson, final Map<String, Source> mapIDtoSource) {
         Person husb = null;
         Person wife = null;
-        final ArrayList<Person> rChild = new ArrayList<>();
-        final ArrayList<Event> rEvent = new ArrayList<>();
         boolean isPrivate = false;
 
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(nodeFam, rNode);
 
-        // first check if this family is private information
+        // step 1: get parents and privatization (because we will need to apply these to each child)
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
+
+            if (tag.equals(GedcomTag.HUSB)) {
+                husb = lookUpPerson(line.getPointer(), mapIDtoPerson);
+            } else if (tag.equals(GedcomTag.WIFE)) {
+                wife = lookUpPerson(line.getPointer(), mapIDtoPerson);
+            }
 
             if (!isPrivate) {
                 if (tag.equals(GedcomTag.RESN)) {
@@ -354,25 +365,87 @@ public class Loader {
             }
         }
 
+        // step 2: find children, and build parent-relationship info for each one
+        final ArrayList<ParentChildRelation> husbandsChildren = new ArrayList<>();
+        final ArrayList<ParentChildRelation> wifesChildren = new ArrayList<>();
+        final ArrayList<Event> rEvent = new ArrayList<>();
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
             final GedcomTag tag = line.getTag();
 
-            if (tag.equals(GedcomTag.HUSB)) {
-                husb = lookUpPerson(line.getPointer(), mapIDtoPerson);
-            } else if (tag.equals(GedcomTag.WIFE)) {
-                wife = lookUpPerson(line.getPointer(), mapIDtoPerson);
-            } else if (tag.equals(GedcomTag.CHIL)) {
+            if (tag.equals(GedcomTag.CHIL)) {
                 final Person child = lookUpPerson(line.getPointer(), mapIDtoPerson);
-                rChild.add(child);
+
+                // check for non-birth parents (Family Tree Maker tags _MREL and _FREL)
+                String frel = "";
+                String mrel = "";
+                for (final TreeNode<GedcomLine> nodeSub : node) {
+                    final GedcomLine lineSub = nodeSub.getObject();
+                    final String tagSub = lineSub.getTagString();
+                    if (tagSub.equalsIgnoreCase("_FREL")) {
+                        frel = lineSub.getValue();
+                    } else if (tagSub.equalsIgnoreCase("_MREL")) {
+                        mrel = lineSub.getValue();
+                    }
+                }
+
+                if (Objects.nonNull(husb)) {
+                    // set husband's child relationship
+                    final ParentChildRelation cr = new ParentChildRelation();
+                    cr.setOther(child);
+                    cr.setPrivate(isPrivate);
+                    cr.setRelation(frel);
+                    husbandsChildren.add(cr);
+                    if (cr.getRelation().isPresent()) {
+                        log().info("Found non-biological relation: "+cr.getRelation().get()+" for "+child.getNameSortable()+" and "+husb.getNameSortable());
+                    }
+                    // set child's father relationship
+                    final ParentChildRelation pr = new ParentChildRelation();
+                    pr.setOther(husb);
+                    pr.setPrivate(isPrivate);
+                    pr.setRelation(frel);
+                    child.addFather(pr);
+                }
+                if (Objects.nonNull(wife)) {
+                    // set wife's child relationship
+                    final ParentChildRelation cr = new ParentChildRelation();
+                    cr.setOther(child);
+                    cr.setPrivate(isPrivate);
+                    cr.setRelation(mrel);
+                    wifesChildren.add(cr);
+                    if (cr.getRelation().isPresent()) {
+                        log().info("Found non-biological relation: "+cr.getRelation().get()+" for "+child.getNameSortable()+" and "+wife.getNameSortable());
+                    }
+                    // set child's mother relationship
+                    final ParentChildRelation pr = new ParentChildRelation();
+                    pr.setOther(wife);
+                    pr.setPrivate(isPrivate);
+                    pr.setRelation(mrel);
+                    child.addMother(pr);
+                }
             } else if (GedcomTag.setFamilyEvent.contains(tag)) {
-                // private FAM causes all events to be private, too
                 final Event event = parseEvent(node, mapIDtoSource, isPrivate);
                 this.mapNodeToEvent.put(node, event);
                 rEvent.add(event);
             }
         }
-        buildFamily(husb, wife, rChild, rEvent, isPrivate);
+
+        if (Objects.nonNull(husb)) {
+            final Partnership part = new Partnership(rEvent, isPrivate);
+            part.addChildRelations(husbandsChildren);
+            if (Objects.nonNull(wife)) {
+                part.setPartner(wife);
+            }
+            husb.getPartnerships().add(part);
+        }
+        if (Objects.nonNull(wife)) {
+            final Partnership part = new Partnership(rEvent, isPrivate);
+            part.addChildRelations(wifesChildren);
+            if (Objects.nonNull(husb)) {
+                part.setPartner(husb);
+            }
+            wife.getPartnerships().add(part);
+        }
     }
 
     private static Person lookUpPerson(final String id, final Map<String, Person> mapIDtoPerson) {
@@ -644,34 +717,6 @@ public class Loader {
             case "F": return "female";
             case "U": return "unknown";
             default : return value;
-        }
-    }
-
-    private static void buildFamily(final Person husb, final Person wife, final ArrayList<Person> rChild, final ArrayList<Event> rEvent, boolean isPrivate) {
-        if (husb != null) {
-            final Partnership partnership = new Partnership(rEvent, isPrivate);
-            partnership.addChildren(rChild);
-            if (wife != null) {
-                partnership.setPartner(wife);
-            }
-            husb.getPartnerships().add(partnership);
-        }
-        if (wife != null) {
-            final Partnership partnership = new Partnership(rEvent, isPrivate);
-            partnership.addChildren(rChild);
-            if (husb != null) {
-                partnership.setPartner(husb);
-            }
-            wife.getPartnerships().add(partnership);
-        }
-        for (final Person child : rChild) {
-            if (husb != null) {
-                child.setFather(husb);
-            }
-            if (wife != null) {
-                child.setMother(wife);
-            }
-            child.setPrivateParentage(isPrivate);
         }
     }
 }

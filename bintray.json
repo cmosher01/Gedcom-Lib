@@ -9,14 +9,14 @@
         ]
     },
     "version": {
-        "name": "1.1.2"
+        "name": "1.2.0"
     },
     "files": [ {
             "includePattern": "build/libs/(.*)",
-            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.1.2/$1"
+            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.2.0/$1"
         }, {
             "includePattern": "build/publications/maven/pom-default.xml",
-            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.1.2/gedcom-lib-1.1.2.pom"
+            "uploadPattern": "nu/mine/mosher/gedcom/gedcom-lib/1.2.0/gedcom-lib-1.2.0.pom"
         }
     ],
     "publish": true

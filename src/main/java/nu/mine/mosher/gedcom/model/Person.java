@@ -35,9 +35,8 @@ public class Person implements Comparable<Person>, Privatizable
     private List<Time> rMarriage = new ArrayList<>();
     private List<Time> rDivorce = new ArrayList<>();
 
-    private Person father;
-    private Person mother;
-    private boolean isPrivateParentage;
+    private ArrayList<ParentChildRelation> fathers = new ArrayList<>();
+    private ArrayList<ParentChildRelation> mothers = new ArrayList<>();
 
     /**
      * @param ID
@@ -184,9 +183,9 @@ public class Person implements Comparable<Person>, Privatizable
                 }
                 if (!mar)
                 {
-                    if (par.getChildren().size() > 0)
+                    if (par.getChildRelations().size() > 0)
                     {
-                        final Time birthChild = par.getChildren().get(0).getBirth();
+                        final Time birthChild = par.getChildRelations().get(0).getOther().getBirth();
                         final GregorianCalendar cal = new GregorianCalendar();
                         cal.setGregorianChange(new Date(Long.MIN_VALUE));
                         cal.setTime(birthChild.asDate());
@@ -258,36 +257,95 @@ public class Person implements Comparable<Person>, Privatizable
 
     /**
      * @param father the father to set
+     * @deprecated use addFather
      */
+    @Deprecated
     public void setFather(final Person father)
     {
-        this.father = father;
+        addFather(ParentChildRelation.of(father));
+    }
+
+    public void addFather(final ParentChildRelation relationFather)
+    {
+        this.fathers.add(relationFather);
     }
 
     /**
      * @param mother the mother to set
+     * @deprecated use addMother
      */
+    @Deprecated
     public void setMother(final Person mother)
     {
-        this.mother = mother;
+        addMother(ParentChildRelation.of(mother));
     }
 
+    public void addMother(final ParentChildRelation relationMother) {
+        this.mothers.add(relationMother);
+    }
+
+    /**
+     * Only sets most recently-added parents
+     * @deprecated use addFather and addMother
+     * @param isPrivate
+     */
+    @Deprecated
     public void setPrivateParentage(final boolean isPrivate) {
-        this.isPrivateParentage = isPrivate;
+        if (!this.fathers.isEmpty()) {
+            this.fathers.get(this.fathers.size()-1).setPrivate(isPrivate);
+        }
+        if (!this.mothers.isEmpty()) {
+            this.mothers.get(this.mothers.size()-1).setPrivate(isPrivate);
+        }
     }
 
+    /**
+     * @deprecated use getFathers and getMothers
+     * @return
+     */
+    @Deprecated
     public boolean isPrivateParentage() {
-        return this.isPrivateParentage;
+        if (!this.fathers.isEmpty() && this.fathers.get(0).isPrivate()) {
+            return true;
+        }
+        if (!this.mothers.isEmpty() && this.mothers.get(0).isPrivate()) {
+            return true;
+        }
+        return false;
     }
 
+    /**
+     * @deprecated
+     * @return
+     */
+    @Deprecated
     public Person getFather()
     {
-        return this.father;
+        if (!this.fathers.isEmpty()) {
+            return this.fathers.get(0).getOther();
+        }
+        return null;
     }
 
+    public ArrayList<ParentChildRelation> getFathers() {
+        return this.fathers;
+    }
+
+    /**
+     * @deprecated
+     * @return
+     */
+    @Deprecated
     public Person getMother()
     {
-        return this.mother;
+        if (!this.mothers.isEmpty()) {
+            return this.mothers.get(0).getOther();
+        }
+        return null;
+    }
+
+    public ArrayList<ParentChildRelation> getMothers() {
+        return this.mothers;
     }
 
     public ArrayList<Event> getEvents()
@@ -452,12 +510,12 @@ public class Person implements Comparable<Person>, Privatizable
 
     private void getEventsOfFather(final List<FamilyEvent> rEventRet)
     {
-        getEventsOfParent(this.father, "father", rEventRet);
+        this.fathers.forEach(p -> getEventsOfParent(p.getOther(), "father", rEventRet));
     }
 
     private void getEventsOfMother(final List<FamilyEvent> rEventRet)
     {
-        getEventsOfParent(this.mother, "mother", rEventRet);
+        this.mothers.forEach(p -> getEventsOfParent(p.getOther(), "mother", rEventRet));
     }
 
     private void getEventsOfParent(final Person parent, final String relation, final List<FamilyEvent> rEventRet)
@@ -486,8 +544,9 @@ public class Person implements Comparable<Person>, Privatizable
     {
         for (final Partnership partnership : this.rPartnership)
         {
-            for (final Person child : partnership.getChildren())
+            for (final ParentChildRelation rel : partnership.getChildRelations())
             {
+                final Person child = rel.getOther();
                 rEventRet.addAll(child.getEventsWithin(child.getChildhood()).stream().map(event -> new FamilyEvent(child, event, "child")).collect(Collectors.toList()));
             }
         }
