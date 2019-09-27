@@ -36,7 +36,7 @@ public class Loader {
     private final Map<UUID, Person> mapUUIDtoPerson = new HashMap<>();
 
     private final Map<TreeNode<GedcomLine>, Person> mapNodeToPerson = new HashMap<>();
-    private final Map<TreeNode<GedcomLine>, Partnerships> mapNodeToPartnership = new HashMap<>();
+    private final Map<TreeNode<GedcomLine>, Partnerships> mapNodeToPartnerships = new HashMap<>();
     private final Map<TreeNode<GedcomLine>, Event> mapNodeToEvent = new HashMap<>();
 
     private Person first;
@@ -151,6 +151,10 @@ public class Loader {
 
     public Person lookUpPerson(final TreeNode<GedcomLine> node) {
         return this.mapNodeToPerson.get(node);
+    }
+
+    public Partnerships lookUpFamily(final TreeNode<GedcomLine> node) {
+        return this.mapNodeToPartnerships.get(node);
     }
 
     public Event lookUpEvent(final TreeNode<GedcomLine> node) {
@@ -409,7 +413,7 @@ public class Loader {
             wife.getPartnerships().add(part);
             partnerships.wife = Optional.of(part);
         }
-        this.mapNodeToPartnership.put(nodeFam, partnerships);
+        this.mapNodeToPartnerships.put(nodeFam, partnerships);
     }
 
     private static Person lookUpPerson(final String id, final Map<String, Person> mapIDtoPerson) {
