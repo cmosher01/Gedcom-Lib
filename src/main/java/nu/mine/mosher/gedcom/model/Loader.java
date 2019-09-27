@@ -22,16 +22,21 @@ import static nu.mine.mosher.logging.Jul.log;
  *
  * @author Chris Mosher
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class Loader {
+
+    public static class Partnerships {
+        public Optional<Partnership> husb = Optional.empty();
+        public Optional<Partnership> wife = Optional.empty();
+    }
+
     private final GedcomTree gedcom;
     private final String name;
 
     private final Map<UUID, Person> mapUUIDtoPerson = new HashMap<>();
-    private final Map<UUID, Source> mapUUIDtoSource = new HashMap<>();
 
     private final Map<TreeNode<GedcomLine>, Person> mapNodeToPerson = new HashMap<>();
-    //	private final Map<TreeNode<GedcomLine>,Partnership> mapNodeToPartnership = new HashMap<>();
-    private final Map<TreeNode<GedcomLine>, Source> mapNodeToSource = new HashMap<>();
+    private final Map<TreeNode<GedcomLine>, Partnerships> mapNodeToPartnership = new HashMap<>();
     private final Map<TreeNode<GedcomLine>, Event> mapNodeToEvent = new HashMap<>();
 
     private Person first;
@@ -71,9 +76,7 @@ public class Loader {
 
             if (tagTop.equals(GedcomTag.SOUR)) {
                 final Source source = parseSource(nodeTop);
-                this.mapNodeToSource.put(nodeTop, source);
                 mapIDtoSource.put(source.getID(), source);
-                storeInUuidMap(source);
             }
         }
 
@@ -146,16 +149,8 @@ public class Loader {
         return this.mapUUIDtoPerson.get(uuid);
     }
 
-    public Source lookUpSource(final UUID uuid) {
-        return this.mapUUIDtoSource.get(uuid);
-    }
-
     public Person lookUpPerson(final TreeNode<GedcomLine> node) {
         return this.mapNodeToPerson.get(node);
-    }
-
-    public Source lookUpSource(final TreeNode<GedcomLine> node) {
-        return this.mapNodeToSource.get(node);
     }
 
     public Event lookUpEvent(final TreeNode<GedcomLine> node) {
@@ -177,18 +172,6 @@ public class Loader {
             return;
         }
         this.mapUUIDtoPerson.put(uuid, person);
-    }
-
-    private void storeInUuidMap(final Source source) {
-        final UUID uuid = source.getUuid();
-        if (uuid == null) {
-            return;
-        }
-        final Source existing = this.mapUUIDtoSource.get(uuid);
-        if (existing != null) {
-            return;
-        }
-        this.mapUUIDtoSource.put(uuid, source);
     }
 
 
@@ -222,7 +205,6 @@ public class Loader {
         String title = "";
         String publication = "";
         String text = "";
-        UUID uuid = null;
 
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(nodeSource, rNode);
@@ -238,14 +220,9 @@ public class Loader {
                 publication = line.getValue();
             } else if (tag.equals(GedcomTag.TEXT)) {
                 text = line.getValue();
-            } else if (uuid == null && hasUuidTag(line)) {
-                uuid = parseUuid(n);
             }
         }
-        if (uuid == null) {
-            //System.err.println("Cannot find REFN UUID for source \"" + title + "\"; will generate temporary UUID.");
-        }
-        return new Source(nodeSource.getObject().getID(), author, title, publication, text, uuid);
+        return new Source(nodeSource.getObject().getID(), author, title, publication, text);
     }
 
     private Person parseIndividual(final TreeNode<GedcomLine> nodeIndi, final Map<String, Source> mapIDtoSource) {
@@ -257,6 +234,8 @@ public class Loader {
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
         getChildren(nodeIndi, rNode);
 
+        Event birth = null;
+        Event death = null;
         // first check if this individual should be privatized
         // 1. if INDI has RESN confidential; or,
         // 2. if INDI has recent birth
@@ -269,12 +248,14 @@ public class Loader {
                     isPrivate = isPrivateRestriction(line.getValue());
                 }
             }
-            if (!isPrivate) {
-                if (tag.equals(GedcomTag.BIRT)) {
-                    final Event event = parseEvent(node, mapIDtoSource, false);
-                    isPrivate = isRecentEnoughToPrivatize(event);
-                }
+            if (tag.equals(GedcomTag.BIRT)) {
+                birth = parseEvent(node, mapIDtoSource, false);
+            } else if (tag.equals(GedcomTag.DEAT)) {
+                death = parseEvent(node, mapIDtoSource, false);
             }
+        }
+        if (!isPrivate) {
+            isPrivate = isRecentEnoughToPrivatize(birth, death);
         }
 
         for (final TreeNode<GedcomLine> node : rNode) {
@@ -360,7 +341,7 @@ public class Loader {
             if (!isPrivate) {
                 if (tag.equals(GedcomTag.MARR)) {
                     final Event event = parseEvent(node, mapIDtoSource, false);
-                    isPrivate = isRecentEnoughToPrivatize(event);
+                    isPrivate = isRecentEnoughToPrivatize(event, null);
                 }
             }
         }
@@ -391,45 +372,25 @@ public class Loader {
 
                 if (Objects.nonNull(husb)) {
                     // set husband's child relationship
-                    final ParentChildRelation cr = new ParentChildRelation();
-                    cr.setOther(child);
-                    cr.setPrivate(isPrivate);
-                    cr.setRelation(frel);
-                    husbandsChildren.add(cr);
-                    if (cr.getRelation().isPresent()) {
-                        log().info("Found non-biological relation: "+cr.getRelation().get()+" for "+child.getNameSortable()+" and "+husb.getNameSortable());
-                    }
+                    husbandsChildren.add(ParentChildRelation.create(child, isPrivate, frel));
                     // set child's father relationship
-                    final ParentChildRelation pr = new ParentChildRelation();
-                    pr.setOther(husb);
-                    pr.setPrivate(isPrivate);
-                    pr.setRelation(frel);
-                    child.addFather(pr);
+                    child.addFather(ParentChildRelation.create(husb, isPrivate, frel));
                 }
                 if (Objects.nonNull(wife)) {
                     // set wife's child relationship
-                    final ParentChildRelation cr = new ParentChildRelation();
-                    cr.setOther(child);
-                    cr.setPrivate(isPrivate);
-                    cr.setRelation(mrel);
-                    wifesChildren.add(cr);
-                    if (cr.getRelation().isPresent()) {
-                        log().info("Found non-biological relation: "+cr.getRelation().get()+" for "+child.getNameSortable()+" and "+wife.getNameSortable());
-                    }
+                    wifesChildren.add(ParentChildRelation.create(child, isPrivate, mrel));
                     // set child's mother relationship
-                    final ParentChildRelation pr = new ParentChildRelation();
-                    pr.setOther(wife);
-                    pr.setPrivate(isPrivate);
-                    pr.setRelation(mrel);
-                    child.addMother(pr);
+                    child.addMother(ParentChildRelation.create(wife, isPrivate, mrel));
                 }
             } else if (GedcomTag.setFamilyEvent.contains(tag)) {
+                // note: private on FAM forces private on all its events, too
                 final Event event = parseEvent(node, mapIDtoSource, isPrivate);
                 this.mapNodeToEvent.put(node, event);
                 rEvent.add(event);
             }
         }
 
+        final Partnerships partnerships = new Partnerships();
         if (Objects.nonNull(husb)) {
             final Partnership part = new Partnership(rEvent, isPrivate);
             part.addChildRelations(husbandsChildren);
@@ -437,6 +398,7 @@ public class Loader {
                 part.setPartner(wife);
             }
             husb.getPartnerships().add(part);
+            partnerships.husb = Optional.of(part);
         }
         if (Objects.nonNull(wife)) {
             final Partnership part = new Partnership(rEvent, isPrivate);
@@ -445,7 +407,9 @@ public class Loader {
                 part.setPartner(husb);
             }
             wife.getPartnerships().add(part);
+            partnerships.wife = Optional.of(part);
         }
+        this.mapNodeToPartnership.put(nodeFam, partnerships);
     }
 
     private static Person lookUpPerson(final String id, final Map<String, Person> mapIDtoPerson) {
@@ -455,14 +419,14 @@ public class Loader {
     private static Source lookUpSource(final String id, final Map<String, Source> mapIDtoSource) {
         return mapIDtoSource.containsKey(id) ?
             mapIDtoSource.get(id) :
-            new Source("", "", "", "", "", null);
+            new Source("", "", "", "", "");
     }
 
     private static String parseName(final TreeNode<GedcomLine> nodeName) {
         return nodeName.getObject().getValue();
     }
 
-    private Event parseEvent(final TreeNode<GedcomLine> nodeEvent, final Map<String, Source> mapIDtoSource, boolean isForcePrivate) {
+    private Event parseEvent(final TreeNode<GedcomLine> nodeEvent, final Map<String, Source> mapIDtoSource, boolean isPrivate) {
         final String whichEvent = getEventName(nodeEvent);
 
         final Collection<TreeNode<GedcomLine>> rNode = new ArrayList<>();
@@ -472,7 +436,6 @@ public class Loader {
         String place = "";
         String note = "";
         final ArrayList<Citation> citations = new ArrayList<>();
-        boolean isPrivate = false;
 
         for (final TreeNode<GedcomLine> node : rNode) {
             final GedcomLine line = node.getObject();
@@ -524,7 +487,7 @@ public class Loader {
             note += nodeEvent.getObject().getValue();
         }
 
-        return new Event(whichEvent, date, place, note, citations, isPrivate || isForcePrivate);
+        return new Event(whichEvent, date, place, note, citations, isPrivate);
     }
 
     /**
@@ -542,10 +505,10 @@ public class Loader {
      * WARNING: this library does not automatically privatize any data. All
      * privatization is the responsibility of the caller.
      *
-     * @param valueOfResnLine
+     * @param valueOfResnLine RESN value string
      * @return true if data should be privatized
      */
-    private static boolean isPrivateRestriction(String valueOfResnLine) {
+    private static boolean isPrivateRestriction(final String valueOfResnLine) {
         final String upperValue = valueOfResnLine.toUpperCase();
         return !upperValue.equals("LOCKED");
     }
@@ -658,19 +621,30 @@ public class Loader {
         return nodeNote.getObject().getValue();
     }
 
-    private static boolean isRecentEnoughToPrivatize(final Event birth) {
-        final DatePeriod dateInformation = birth.getDate();
-        if (dateInformation == null) {
+    private static boolean isRecentEnoughToPrivatize(final Event event, final Event death) {
+        if (Objects.isNull(event)) {
             return false;
         }
-        if (dateInformation.equals(DatePeriod.UNKNOWN)) {
+        final DatePeriod dpEvent = event.getDate();
+        if (Objects.isNull(dpEvent) || dpEvent.equals(DatePeriod.UNKNOWN)) {
             return false;
         }
 
+        if (Objects.nonNull(death)) {
+            final DatePeriod dpDeath = death.getDate();
+            if (Objects.nonNull(dpDeath) && !dpDeath.equals(DatePeriod.UNKNOWN)) {
+                return false;
+            }
+        }
+
+        return dateOfLatestPublicInformation().compareTo(dpEvent.getEndDate().getApproxDay()) < 0;
+    }
+
+    private static Time dateOfLatestPublicInformation() {
         final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.YEAR, -90);
-        final Time dateLatestPublicInformation = new Time(cal.getTime());
-        return dateLatestPublicInformation.compareTo(dateInformation.getEndDate().getApproxDay()) < 0;
+        // GEDCOM 5.5.1 mentions that Ancestral File uses 110 years:
+        cal.add(Calendar.YEAR, -110);
+        return new Time(cal.getTime());
     }
 
     private static String getEventName(final TreeNode<GedcomLine> node) {

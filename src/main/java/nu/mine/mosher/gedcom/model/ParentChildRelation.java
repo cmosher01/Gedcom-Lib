@@ -7,9 +7,16 @@ public class ParentChildRelation implements Comparable<ParentChildRelation>, Pri
     private Optional<String> relation = Optional.empty(); // empty indicates genetic/natural/biological parent
     private boolean isPrivate;
 
-    public static ParentChildRelation of(final Person parent) {
+    public static ParentChildRelation of(final Person other) {
         final ParentChildRelation it = new ParentChildRelation();
-        it.setOther(parent);
+        it.setOther(other);
+        return it;
+    }
+
+    public static ParentChildRelation create(final Person other, final boolean isPrivate, final String relation) {
+        final ParentChildRelation it = of(other);
+        it.setPrivate(isPrivate);
+        it.setRelation(relation);
         return it;
     }
 
@@ -25,8 +32,8 @@ public class ParentChildRelation implements Comparable<ParentChildRelation>, Pri
         return this.isPrivate;
     }
 
-    public void setOther(final Person parent) {
-        this.other = parent;
+    public void setOther(final Person other) {
+        this.other = other;
     }
 
     public void setRelation(final String relation) {

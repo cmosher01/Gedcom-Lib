@@ -33,13 +33,10 @@ public final class Gedcom {
 
         final Processor model;
         if (options.model) {
-            model = new Processor() {
-                @Override
-                public boolean process(GedcomTree tree) {
-                    final Loader loader = new Loader(tree, "");
-                    loader.parse();
-                    return true;
-                }
+            model = tree -> {
+                final Loader loader = new Loader(tree, "");
+                loader.parse();
+                return true;
             };
         } else {
             model = g-> true;
@@ -89,18 +86,14 @@ public final class Gedcom {
 
             if (this.options.concToWidth != null) {
                 final Integer width = this.options.concToWidth;
-                if (width != null) {
-                    log().info("Rebuilding CONC/CONT lines to specified width: " + width);
-                    tree.setMaxLength(width);
-                } else {
-                    log().info("Rebuilding CONC/CONT lines to guessed width " + Integer.toString(tree.getMaxLength()));
-                }
+                log().info("Rebuilding CONC/CONT lines to specified width: " + width);
+                tree.setMaxLength(width);
                 new GedcomUnconcatenator(tree).unconcatenate();
             }
 
             if (this.options.utf8) {
                 log().info("Converting to UTF-8 encoding for output.");
-                tree.setCharset(Charset.forName("UTF-8"));
+                tree.setCharset(StandardCharsets.UTF_8);
             }
 
             writeFile(tree, getStandardOutput());
@@ -120,7 +113,6 @@ public final class Gedcom {
     public static GedcomTree readFile(final BufferedInputStream streamInput, Charset charsetForce) throws
         IOException, InvalidLevel {
         if (charsetForce == null) {
-//            charsetForce = new GedcomCharsetDetector(streamInput).detect();
             charsetForce = new GedcomEncodingDetector(streamInput).detect();
         } else {
             log().info("Forcing input character encoding to " + charsetForce.name());
