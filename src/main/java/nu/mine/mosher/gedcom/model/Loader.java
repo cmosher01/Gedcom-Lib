@@ -38,6 +38,7 @@ public class Loader {
     private final Map<TreeNode<GedcomLine>, Person> mapNodeToPerson = new HashMap<>();
     private final Map<TreeNode<GedcomLine>, Partnerships> mapNodeToPartnerships = new HashMap<>();
     private final Map<TreeNode<GedcomLine>, Event> mapNodeToEvent = new HashMap<>();
+    private final Map<TreeNode<GedcomLine>, Source> mapNodeToSource = new HashMap<>();
 
     private Person first;
     private final List<Person> people = new ArrayList<>(256);
@@ -76,6 +77,7 @@ public class Loader {
 
             if (tagTop.equals(GedcomTag.SOUR)) {
                 final Source source = parseSource(nodeTop);
+                this.mapNodeToSource.put(nodeTop, source);
                 mapIDtoSource.put(source.getID(), source);
             }
         }
@@ -159,6 +161,10 @@ public class Loader {
 
     public Event lookUpEvent(final TreeNode<GedcomLine> node) {
         return this.mapNodeToEvent.get(node);
+    }
+
+    public Source lookUpSource(final TreeNode<GedcomLine> node) {
+        return this.mapNodeToSource.get(node);
     }
 
     public void appendAllUuids(final Set<UUID> appendTo) {
