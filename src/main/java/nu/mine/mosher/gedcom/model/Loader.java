@@ -486,9 +486,7 @@ public class Loader {
         }
         if (nodeEvent.getObject().getTag().equals(GedcomTag.NOTE)) {
             note = parseNote(nodeEvent);
-        }
-
-        if (!nodeEvent.getObject().getValue().isEmpty() &&
+        } else if (!nodeEvent.getObject().getValue().isEmpty() &&
             !nodeEvent.getObject().getTag().equals(GedcomTag.NAME) &&
             !nodeEvent.getObject().getTag().equals(GedcomTag.SEX)) {
             if (!note.isEmpty()) {
