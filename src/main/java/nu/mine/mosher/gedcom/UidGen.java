@@ -16,10 +16,11 @@ class UidGen {
         ALPHABET = s;
     }
 
+    public static final String RNG_ALGORITHM = "NativePRNGNonBlocking";
     private static final SecureRandom RNG;
     static {
         try {
-            RNG = SecureRandom.getInstance("NativePRNGBlocking");
+            RNG = SecureRandom.getInstance(RNG_ALGORITHM);
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
