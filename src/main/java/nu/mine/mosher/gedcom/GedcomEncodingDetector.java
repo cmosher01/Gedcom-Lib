@@ -225,46 +225,47 @@ public class GedcomEncodingDetector {
     https://www.tamurajones.net/GEDCOMCharacterEncodings.xhtml
     "Modern Software Experience" "GEDCOM Character Encodings"
      */
-    private static final Map<String, String> mapChar = Collections.unmodifiableMap(new HashMap<String, String>() {{
-        put("IBMPC", "Cp437");
-        put("IBM-PC", "Cp437");
-        put("IBM", "Cp437");
-        put("PC", "Cp437");
-        put("OEM", "Cp437");
+    private static final Map<String, String> mapChar;
+    static {
+        final Map<String, String> m = new HashMap<String, String>();
 
-        put("MSDOS", "Cp850");
-        put("MS-DOS", "Cp850");
-        put("DOS", "Cp850");
-        put("IBM DOS", "Cp850");
+        m.put("IBMPC", "Cp437");
+        m.put("IBM-PC", "Cp437");
+        m.put("IBM", "Cp437");
+        m.put("PC", "Cp437");
+        m.put("OEM", "Cp437");
 
-        put("ANSI", "windows-1252");
-        put("WINDOWS", "windows-1252");
-        put("WIN", "windows-1252");
-        put("IBM WINDOWS", "windows-1252");
-        put("IBM_WINDOWS", "windows-1252");
+        m.put("MSDOS", "Cp850");
+        m.put("MS-DOS", "Cp850");
+        m.put("DOS", "Cp850");
+        m.put("IBM DOS", "Cp850");
 
-        put("ASCII", "windows-1252");
-        put("CP1252", "windows-1252");
+        m.put("ANSI", "windows-1252");
+        m.put("WINDOWS", "windows-1252");
+        m.put("WIN", "windows-1252");
+        m.put("IBM WINDOWS", "windows-1252");
+        m.put("IBM_WINDOWS", "windows-1252");
 
-        put("ISO-8859-1", "windows-1252");
-        put("ISO8859-1", "windows-1252");
-        put("ISO-8859", "windows-1252");
-        put("LATIN1", "windows-1252");
+        m.put("ASCII", "windows-1252");
+        m.put("CP1252", "windows-1252");
 
-        put("MAC", "MacRoman");
-        put("MACINTOSH", "MacRoman");
+        m.put("ISO-8859-1", "windows-1252");
+        m.put("ISO8859-1", "windows-1252");
+        m.put("ISO-8859", "windows-1252");
+        m.put("LATIN1", "windows-1252");
 
-        put("UNICODE", "UTF-16");
-        put("UTF-8", "UTF-8");
+        m.put("MAC", "MacRoman");
+        m.put("MACINTOSH", "MacRoman");
 
-        put("ANSEL", "x-gedcom-ansel");
-    }});
+        m.put("UNICODE", "UTF-16");
+        m.put("UTF-8", "UTF-8");
+
+        m.put("ANSEL", "x-gedcom-ansel");
+
+        mapChar = Collections.unmodifiableMap(m);
+    }
 
     private static String interpretHeadChar(final String headChar) {
-        if (!mapChar.containsKey(headChar)) {
-            return "";
-        }
-
-        return mapChar.get(headChar);
+        return Objects.toString(mapChar.get(headChar), "");
     }
 }

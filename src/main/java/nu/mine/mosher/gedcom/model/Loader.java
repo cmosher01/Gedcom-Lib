@@ -503,7 +503,7 @@ public class Loader {
      * (Assumes that RESN tag exists, of course.)
      * If value is illegal or unrecognized, then fail-safe and return true.
      * If value is "confidential", then return true.
-     * If value is "locked, then reutrn false (locked data is assumed non-private,
+     * If value is "locked, then return false (locked data is assumed non-private,
      * otherwise it wouldn't need to be locked).
      * If value is "privacy", it indicates that the data is not included in the
      * GEDCOM file; however, Family Tree Maker, for one, includes the

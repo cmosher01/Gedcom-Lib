@@ -1,15 +1,13 @@
 package nu.mine.mosher.gedcom;
 
 
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import nu.mine.mosher.collection.TreeNode;
 import nu.mine.mosher.gedcom.exception.InvalidLevel;
+
+import java.io.IOException;
+import java.nio.charset.*;
+import java.text.*;
+import java.util.*;
 
 import static nu.mine.mosher.logging.Jul.log;
 
@@ -17,10 +15,10 @@ import static nu.mine.mosher.logging.Jul.log;
 /**
  * Represents a GEDCOM document. A GEDCOM document is a tree structure or
  * <code>GedcomLine</code> objects.
+ *
  * @author Chris Mosher
  */
-public class GedcomTree
-{
+public class GedcomTree {
     private Charset charset = null;
     private int maxLength = 0;
     private final TreeNode<GedcomLine> root;
@@ -32,8 +30,7 @@ public class GedcomTree
     /**
      * Initializes a new <code>GedcomTree</code>.
      */
-    public GedcomTree()
-    {
+    public GedcomTree() {
         this.root = new TreeNode<>();
         this.prevNode = this.root;
         this.prevLevel = -1;
@@ -43,17 +40,20 @@ public class GedcomTree
         return this.charset;
     }
 
-    private static final Map<Charset, String> mapCharsetToGedcom = Collections.unmodifiableMap(new HashMap<Charset, String>() {{
-        put(Charset.forName("UTF-8"), "UTF-8");
-        put(Charset.forName("UTF-16"), "UTF-16");
-//        put(Charset.forName("x-gedcom-ansel"), "ANSEL");
-        put(Charset.forName("US-ASCII"), "ASCII");
-    }});
+    private static final Map<Charset, String> mapCharsetToGedcom;
+
+    static {
+        final HashMap<Charset, String> m = new HashMap<>();
+        m.put(StandardCharsets.UTF_8, "UTF-8");
+        m.put(StandardCharsets.UTF_16, "UTF-16");
+        m.put(StandardCharsets.US_ASCII, "ASCII");
+        mapCharsetToGedcom = Collections.unmodifiableMap(m);
+    }
 
     public void setCharset(Charset charset) {
         if (!mapCharsetToGedcom.containsKey(charset)) {
-            log().warning("Cannot convert to encoding "+charset.name()+"; defaulting to UTF-8.");
-            charset = Charset.forName("UTF-8");
+            log().warning("Cannot convert to encoding " + charset.name() + "; defaulting to UTF-8.");
+            charset = StandardCharsets.UTF_8;
         }
         for (final TreeNode<GedcomLine> r : this.root) {
             if (r.getObject().getTag().equals(GedcomTag.HEAD)) {
@@ -65,7 +65,7 @@ public class GedcomTree
             }
         }
         this.charset = charset;
-        log().info("Set output character encoding to "+this.charset.name());
+        log().info("Set output character encoding to " + this.charset.name());
     }
 
     void setMaxLength(final int maxLength) {
@@ -93,22 +93,20 @@ public class GedcomTree
     /**
      * Appends a <code>GedcomLine</code> to this tree. This method must be
      * called in the same sequence that GEDCOM lines appear in the file.
+     *
      * @param line GEDCOM line to be appended to this tree.
      * @throws InvalidLevel if the <code>line</code>'s level is invalid (that
-     *             is, in the wrong sequence to be correct within the context of
-     *             the lines added to this tree so far)
+     *                      is, in the wrong sequence to be correct within the context of
+     *                      the lines added to this tree so far)
      */
-    private void appendLine(final GedcomLine line) throws InvalidLevel
-    {
+    private void appendLine(final GedcomLine line) throws InvalidLevel {
         final int cPops = this.prevLevel + 1 - line.getLevel();
-        if (cPops < 0)
-        {
+        if (cPops < 0) {
             throw new InvalidLevel(line);
         }
 
         TreeNode<GedcomLine> parent = this.prevNode;
-        for (int i = 0; i < cPops; ++i)
-        {
+        for (int i = 0; i < cPops; ++i) {
             parent = parent.parent();
         }
 
@@ -117,38 +115,34 @@ public class GedcomTree
         this.prevNode.setObject(line);
         parent.addChild(this.prevNode);
 
-        if (line.hasID())
-        {
+        if (line.hasID()) {
             this.mapIDtoNode.put(line.getID(), this.prevNode);
         }
     }
 
     /**
      * Gets the node in this <code>GedcomTree</code> with the given ID.
+     *
      * @param id ID of the GEDCOM node to look up
      * @return the node with the given ID.
      */
-    public TreeNode<GedcomLine> getNode(final String id)
-    {
+    public TreeNode<GedcomLine> getNode(final String id) {
         return this.mapIDtoNode.get(id);
     }
 
     /**
      * Returns a string representation of this tree. The string returned is
      * intended for debugging purposes, not for any kind of persistence.
+     *
      * @return string representation of this tree
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder(1024);
 
-        try
-        {
+        try {
             this.root.appendStringDeep(sb);
-        }
-        catch (final IOException e)
-        {
+        } catch (final IOException e) {
             /*
              * StringBuffer does not throw IOException, so this should never
              * happen.
@@ -161,10 +155,10 @@ public class GedcomTree
 
     /**
      * Gets the root of this tree.
+     *
      * @return root node
      */
-    public TreeNode<GedcomLine> getRoot()
-    {
+    public TreeNode<GedcomLine> getRoot() {
         return this.root;
     }
 
@@ -184,7 +178,7 @@ public class GedcomTree
 
         for (final TreeNode<GedcomLine> head : this.root) {
             if (head.getObject().getTag().equals(GedcomTag.HEAD)) {
-                addOrUpdateChild(head,GedcomTag.DATE, date);
+                addOrUpdateChild(head, GedcomTag.DATE, date);
                 for (final TreeNode<GedcomLine> d : head) {
                     if (d.getObject().getTag().equals(GedcomTag.DATE)) {
                         addOrUpdateChild(d, GedcomTag.TIME, time);
@@ -202,6 +196,6 @@ public class GedcomTree
                 return;
             }
         }
-        nodeParent.addChild(new TreeNode<>(GedcomLine.create(nodeParent.getObject().getLevel()+1, tagChild, valChild)));
+        nodeParent.addChild(new TreeNode<>(GedcomLine.create(nodeParent.getObject().getLevel() + 1, tagChild, valChild)));
     }
 }

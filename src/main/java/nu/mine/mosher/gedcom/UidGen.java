@@ -1,31 +1,35 @@
 package nu.mine.mosher.gedcom;
 
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.UUID;
+import java.security.*;
 
 /**
- * Generates a unique ID, containing only letters (A-Z, a-z),
+ * Generates a unique ID, containing only uppercase letters (A-Z),
  * and 20 characters long, suitable for use a GEDCOM ID.
  */
-public class UidGen {
-    public static String generateUid() {
-        String s = generateCandidateUid();
-        while (s.contains("_") || s.contains("-")) {
-            s = generateCandidateUid();
+class UidGen {
+    private static final String ALPHABET;
+    static {
+        String s = "";
+        for (char c = 'A'; c <= 'Z'; ++c) {
+            s += c;
         }
-        return s.substring(0, 20);
+        ALPHABET = s;
     }
 
-    private static String generateCandidateUid() {
-        return base64encode(rbFromUuid(UUID.randomUUID()));
+    private static final SecureRandom RNG;
+    static {
+        try {
+            RNG = SecureRandom.getInstance("NativePRNGBlocking");
+        } catch (final NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    private static byte[] rbFromUuid(final UUID uuid) {
-        return ByteBuffer.allocate(16).putLong(uuid.getMostSignificantBits()).putLong(uuid.getLeastSignificantBits()).array();
-    }
-
-    private static String base64encode(final byte[] rb) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(rb);
+    public static String generate() {
+        final StringBuilder sb = new StringBuilder(20);
+        for (int i = 0; i < 20; ++i) {
+            sb.append(ALPHABET.charAt(RNG.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
     }
 }

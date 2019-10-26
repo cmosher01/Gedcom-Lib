@@ -1,20 +1,17 @@
 package nu.mine.mosher.gedcom;
 
 
-
-import java.text.Normalizer;
-
 import static java.text.Normalizer.Form.NFC;
 import static java.text.Normalizer.normalize;
 
 /**
  * Represents one GEDCOM entry (usually one line). Objects of this class are
  * immutable.
+ *
  * @author Chris Mosher
  */
-@SuppressWarnings({ "WeakerAccess", "unused" })
-public class GedcomLine implements Comparable<GedcomLine>
-{
+@SuppressWarnings({"WeakerAccess", "unused"})
+public class GedcomLine implements Comparable<GedcomLine> {
     private final int level;
     private final String id;
     private final String tagString;
@@ -24,25 +21,21 @@ public class GedcomLine implements Comparable<GedcomLine>
 
     /**
      * Initializes a <code>GedcomLine</code>.
+     *
      * @param level
      * @param id
      * @param tag
      * @param value
      */
-    GedcomLine(final int level, final String id, final String tag,
-        final String value)
-    {
+    GedcomLine(final int level, final String id, final String tag, final String value) {
         this.level = level;
         this.id = getPointer(id);
         this.tagString = tag;
         final String v = getPointer(value);
-        if (v.length() > 0)
-        {
+        if (v.length() > 0) {
             this.pointer = v;
             this.value = "";
-        }
-        else
-        {
+        } else {
             this.value = replaceAts(value);
             this.pointer = "";
         }
@@ -50,9 +43,7 @@ public class GedcomLine implements Comparable<GedcomLine>
         this.tag = parseTag();
     }
 
-    private GedcomLine(final String id, final int level, final String pointer,
-        final GedcomTag tag, final String tagString, final String value)
-    {
+    private GedcomLine(final String id, final int level, final String pointer, final GedcomTag tag, final String tagString, final String value) {
         this.id = id;
         this.level = level;
         this.pointer = pointer;
@@ -61,14 +52,10 @@ public class GedcomLine implements Comparable<GedcomLine>
         this.value = value;
     }
 
-    private GedcomTag parseTag()
-    {
-        try
-        {
+    private GedcomTag parseTag() {
+        try {
             return GedcomTag.valueOf(this.tagString);
-        }
-        catch (final IllegalArgumentException e)
-        {
+        } catch (final IllegalArgumentException e) {
             return GedcomTag.UNKNOWN;
         }
     }
@@ -86,17 +73,16 @@ public class GedcomLine implements Comparable<GedcomLine>
         return pointer;
     }
 
-    private static String replaceAts(final String s)
-    {
+    private static String replaceAts(final String s) {
         return s.replaceAll("@@", "@");
     }
-    private static String restoreAts(final String s)
-    {
+
+    private static String restoreAts(final String s) {
         return s.replaceAll("@", "@@");
     }
 
     public GedcomLine replaceValue(final String newValue) {
-        return new GedcomLine(this.level, "@"+this.id+"@", this.tagString, newValue);
+        return new GedcomLine(this.level, "@" + this.id + "@", this.tagString, newValue);
     }
 
     public GedcomLine replaceLink(final String newId) {
@@ -106,19 +92,19 @@ public class GedcomLine implements Comparable<GedcomLine>
         if (isPointer()) {
             return replacePointer(newId);
         }
-        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: "+toString());
+        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: " + toString());
     }
 
     public GedcomLine replacePointer(final String newPointerWithoutAts) {
-        return new GedcomLine(this.level, "", this.tagString, "@"+newPointerWithoutAts+"@");
+        return new GedcomLine(this.level, "", this.tagString, "@" + newPointerWithoutAts + "@");
     }
 
     public GedcomLine replaceId(final String newIdWithoutAts) {
-        return new GedcomLine(this.level, "@"+newIdWithoutAts+"@", this.tagString, this.value);
+        return new GedcomLine(this.level, "@" + newIdWithoutAts + "@", this.tagString, this.value);
     }
 
     public GedcomLine replacePointer(final GedcomLine to) {
-        return new GedcomLine(this.level, "", this.tagString, "@"+to.getID()+"@");
+        return new GedcomLine(this.level, "", this.tagString, "@" + to.getID() + "@");
     }
 
     public GedcomLine createChild(final GedcomTag newTag, final String newValue) {
@@ -126,7 +112,7 @@ public class GedcomLine implements Comparable<GedcomLine>
     }
 
     public GedcomLine createChild(final String newTag, final String newValue) {
-        return new GedcomLine(this.level+1, "", newTag, newValue);
+        return new GedcomLine(this.level + 1, "", newTag, newValue);
     }
 
     public static GedcomLine createHeader() {
@@ -142,11 +128,11 @@ public class GedcomLine implements Comparable<GedcomLine>
     }
 
     public static GedcomLine createEmptyId(final String idWithoutAts, final GedcomTag tag) {
-        return new GedcomLine(0, "@"+idWithoutAts+"@", tag.name(), "");
+        return new GedcomLine(0, "@" + idWithoutAts + "@", tag.name(), "");
     }
 
     public static GedcomLine createEmptyUid(final GedcomTag tag) {
-        return createEmptyId(UidGen.generateUid(), tag);
+        return createEmptyId(UidGen.generate(), tag);
     }
 
     public static GedcomLine create(final int level, final GedcomTag tag, final String valueWithDoubledAts) {
@@ -154,15 +140,15 @@ public class GedcomLine implements Comparable<GedcomLine>
     }
 
     public static GedcomLine createId(final String idWithoutAts, final GedcomTag tag, final String valueWithDoubledAts) {
-        return new GedcomLine(0, "@"+idWithoutAts+"@", tag.name(), valueWithDoubledAts);
+        return new GedcomLine(0, "@" + idWithoutAts + "@", tag.name(), valueWithDoubledAts);
     }
 
     public static GedcomLine createUid(final GedcomTag tag, final String valueWithDoubledAts) {
-        return createId(UidGen.generateUid(), tag, valueWithDoubledAts);
+        return createId(UidGen.generate(), tag, valueWithDoubledAts);
     }
 
     public static GedcomLine createPointer(final int level, final GedcomTag tag, final String ptrWithoutAts) {
-        return new GedcomLine(level, "", tag.name(), "@"+ptrWithoutAts+"@");
+        return new GedcomLine(level, "", tag.name(), "@" + ptrWithoutAts + "@");
     }
 
     public static GedcomLine createUser(final int level, final String tag, final String valueWithDoubledAts) {
@@ -170,66 +156,39 @@ public class GedcomLine implements Comparable<GedcomLine>
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder(256);
 
         sb.append(Integer.toString(this.level)).append(" ");
 
-        if (hasID())
-        {
+        if (hasID()) {
             sb.append("@").append(this.id).append("@ ");
         }
 
         sb.append(this.tagString);
 
-        if (isPointer() || this.value.length() > 0)
-        {
+        if (isPointer() || this.value.length() > 0) {
             sb.append(" ");
         }
 
-        if (isPointer())
-        {
+        if (isPointer()) {
             sb.append("@").append(this.pointer).append("@");
-        }
-        else
-        {
+        } else {
             String v = this.value;
-            if (!this.tag.equals(GedcomTag.DATE))
-            {
+            if (!this.tag.equals(GedcomTag.DATE)) {
                 v = restoreAts(v);
                 // TODO make normalization optional
                 v = normalize(v, NFC);
             }
             sb.append(v);
         }
-        /*
-        if (hasID())
-        {
-            sb.append(this.id);
-            sb.append(": ");
-        }
-        sb.append(this.tagString);
-        sb.append(" ");
-        if (isPointer())
-        {
-            sb.append("--> ");
-            sb.append(this.pointer);
-        }
-        else
-        {
-            appendFilteredValue(this.value, sb);
-        }
-        */
         return sb.toString();
     }
 
-    public void dump(final StringBuilder appendTo)
-    {
+    public void dump(final StringBuilder appendTo) {
         appendTo.append(this.level);
         appendTo.append(",");
-        if (hasID())
-        {
+        if (hasID()) {
             appendTo.append("id=");
             appendTo.append(this.id);
             appendTo.append(",");
@@ -237,38 +196,31 @@ public class GedcomLine implements Comparable<GedcomLine>
         appendTo.append("tag=");
         appendTo.append(this.tagString);
         appendTo.append(",");
-        if (isPointer())
-        {
+        if (isPointer()) {
             appendTo.append("pointer=");
             appendTo.append(this.pointer);
-        }
-        else
-        {
+        } else {
             appendTo.append("value=\"");
             appendFilteredValue(this.value, appendTo);
             appendTo.append("\"");
         }
     }
 
-    private static void appendFilteredValue(final String value,
-        final StringBuilder appendTo)
-    {
+    private static void appendFilteredValue(final String value, final StringBuilder appendTo) {
         appendTo.append(value.replaceAll("\n", "[NEWLINE]"));
     }
 
     /**
      * @return if this line has an ID
      */
-    public boolean hasID()
-    {
+    public boolean hasID() {
         return this.id.length() > 0;
     }
 
     /**
      * @return if this line has a pointer
      */
-    public boolean isPointer()
-    {
+    public boolean isPointer() {
         return this.pointer.length() > 0;
     }
 
@@ -279,24 +231,21 @@ public class GedcomLine implements Comparable<GedcomLine>
     /**
      * @return the ID for this line
      */
-    public String getID()
-    {
+    public String getID() {
         return this.id;
     }
 
     /**
      * @return the level number of this line
      */
-    public int getLevel()
-    {
+    public int getLevel() {
         return this.level;
     }
 
     /**
      * @return the pointer value, if any, in this line
      */
-    public String getPointer()
-    {
+    public String getPointer() {
         return this.pointer;
     }
 
@@ -307,38 +256,35 @@ public class GedcomLine implements Comparable<GedcomLine>
         if (hasID()) {
             return getID();
         }
-        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: "+toString());
+        throw new IllegalStateException("GedcomLine does not have an ID or a Pointer: " + toString());
     }
 
     /**
      * @return the GEDCOM tag on this line
      */
-    public GedcomTag getTag()
-    {
+    public GedcomTag getTag() {
         return this.tag;
     }
 
-    public String getTagString()
-    {
+    public String getTagString() {
         return this.tagString;
     }
 
     /**
      * @return the actual value of this line
      */
-    public String getValue()
-    {
+    public String getValue() {
         return this.value;
     }
 
     /**
      * Handles CONT tags by appending the given string to the value of this
      * line, and returning a new <code>GedcomLine</code>.
+     *
      * @param sContinuedLine
      * @return new <code>GedcomLine</code>
      */
-    GedcomLine contValue(final String sContinuedLine)
-    {
+    GedcomLine contValue(final String sContinuedLine) {
         return new GedcomLine(this.id, this.level, this.pointer, this.tag,
             this.tagString, this.value + "\n" + sContinuedLine);
     }
@@ -346,11 +292,11 @@ public class GedcomLine implements Comparable<GedcomLine>
     /**
      * Handles CONC tags by appending the given string to the value of this
      * line, and returning a new <code>GedcomLine</code>.
+     *
      * @param sConcatenatedLine
      * @return new <code>GedcomLine</code>
      */
-    GedcomLine concValue(final String sConcatenatedLine)
-    {
+    GedcomLine concValue(final String sConcatenatedLine) {
         return new GedcomLine(this.id, this.level, this.pointer, this.tag,
             this.tagString, this.value + sConcatenatedLine);
     }

@@ -26,7 +26,7 @@ public class GedcomOptions {
 
     public void help() {
         this.help = true;
-        System.err.println("Usage: java -jar gedcom-lib-all.jar [OPTION]... <in.ged >out.ged 2>ged.log");
+        System.err.println("Usage: gedcom-lib [OPTION]... <in.ged >out.ged 2>ged.log");
         System.err.println("Process a GEDCOM file.");
         System.err.println("Options:");
         options();
