@@ -30,6 +30,14 @@ public class Loader {
         public Optional<Partnership> wife = Optional.empty();
     }
 
+    // hardcoded source for Family Tree links (at FamilySearch)
+    private static final Source sourceLdsFamilyTree = new Source(
+        "74a586b6-6786-4ba1-859c-8e317fec4dde",
+        "The Church of Jesus Christ of Latter‐day Saints [LDS]",
+        "Family Tree",
+        "https://www.familysearch.org",
+        "");
+
     private final GedcomTree gedcom;
     private final String name;
 
@@ -273,7 +281,7 @@ public class Loader {
             final GedcomTag tag = line.getTag();
             if (uuid == null && hasUuidTag(line)) {
                 uuid = parseUuid(node);
-            } else if (isEventish(tag)) {
+            } else if (isEventish(tag, line.getTagString())) {
                 if (tag.equals(GedcomTag.NAME)) {
                     if (name.isEmpty()) {
                         // grab out the name (just the first one)
@@ -297,13 +305,14 @@ public class Loader {
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
     }
 
-    private boolean isEventish(final GedcomTag tag) {
+    private boolean isEventish(final GedcomTag tag, String tagString) {
         return
             GedcomTag.setIndividualEvent.contains(tag) ||
             GedcomTag.setIndividualAttribute.contains(tag) ||
             tag.equals(GedcomTag.NOTE) ||
             tag.equals(GedcomTag.NAME) ||
-            tag.equals(GedcomTag.SEX);
+            tag.equals(GedcomTag.SEX) ||
+            tagString.equalsIgnoreCase("FSID"); // FSID is FamilySearch ID, as output from Family Tree Maker
     }
 
     private static boolean hasUuidTag(final GedcomLine line) {
@@ -486,6 +495,10 @@ public class Loader {
         }
         if (nodeEvent.getObject().getTag().equals(GedcomTag.NOTE)) {
             note = parseNote(nodeEvent);
+        } else if (nodeEvent.getObject().getTagString().equalsIgnoreCase("FSID")) {
+            // FamilySearch ID, output from Family Tree Maker.
+            // Add a link to familysearch.org (as a proper citation)
+            citations.add(new Citation(sourceLdsFamilyTree, buildLdsFamilyTreeLink(nodeEvent.getObject().getValue()), "", new HashSet<>(), new HashSet<>(), null));
         } else if (!nodeEvent.getObject().getValue().isEmpty() &&
             !nodeEvent.getObject().getTag().equals(GedcomTag.NAME) &&
             !nodeEvent.getObject().getTag().equals(GedcomTag.SEX)) {
@@ -496,6 +509,18 @@ public class Loader {
         }
 
         return new Event(whichEvent, date, place, note, citations, isPrivate);
+    }
+
+    private String buildLdsFamilyTreeLink(final String fsid) {
+        return "<bibl>" +
+            "<author>The Church of Jesus Christ of Latter‐day Saints [LDS]</author>, " +
+            "“<title level=\"u\">Family Tree</title>”, " +
+            "database, " +
+            "<title level=\"m\">FamilySearch</title> " +
+            "(<ref target=\"https://www.familysearch.org/tree/person/" +
+            fsid.trim() +
+            "\"/>)." +
+            "</bibl>";
     }
 
     /**
