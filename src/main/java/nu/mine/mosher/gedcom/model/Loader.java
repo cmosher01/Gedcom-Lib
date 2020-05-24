@@ -682,6 +682,7 @@ public class Loader {
 
     private static String getEventName(final TreeNode<GedcomLine> node) {
         final GedcomTag tag = node.getObject().getTag();
+        final String tagString = node.getObject().getTagString();
 
         String eventName = "";
 
@@ -703,8 +704,16 @@ public class Loader {
             }
         }
 
+        if (tagString.equalsIgnoreCase("FSID")) {
+            eventName = "FamilySearch Family Tree ID: "+node.getObject().getValue();
+        }
+
         if (eventName.isEmpty()) {
             eventName = EventNames.getName(tag);
+        }
+
+        if (eventName.isEmpty()) {
+            eventName = tagString;
         }
 
         if (tag.equals(GedcomTag.NAME)) {
