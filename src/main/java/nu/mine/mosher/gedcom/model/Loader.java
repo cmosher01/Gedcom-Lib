@@ -4,16 +4,16 @@ import java.io.StringReader;
 import java.net.URI;
 import java.text.Collator;
 import java.util.*;
+import java.util.logging.Level;
 
 import nu.mine.mosher.gedcom.GedcomLine;
 import nu.mine.mosher.gedcom.GedcomTag;
 import nu.mine.mosher.gedcom.GedcomTree;
 import nu.mine.mosher.gedcom.date.parser.GedcomDateValueParser;
 import nu.mine.mosher.gedcom.date.DatePeriod;
+import nu.mine.mosher.logging.Jul;
 import nu.mine.mosher.time.Time;
 import nu.mine.mosher.collection.TreeNode;
-
-import static nu.mine.mosher.logging.Jul.log;
 
 /**
  * Parses the given <code>GedcomTree</code> into <code>Person</code> objects.
@@ -186,7 +186,7 @@ public class Loader {
         }
         final Person existing = this.mapUUIDtoPerson.get(uuid);
         if (existing != null) {
-            System.err.println("Duplicate INDI UUID value: " + uuid);
+            Jul.log().log(Level.WARNING, "Duplicate INDI UUID value: "+uuid);
             return;
         }
         this.mapUUIDtoPerson.put(uuid, person);
@@ -299,7 +299,7 @@ public class Loader {
             name = "[unknown]";
         }
         if (uuid == null) {
-            log().warning("Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
+            Jul.log().log(Level.WARNING, "Cannot find REFN UUID for individual \"" + name + "\"; will generate temporary UUID.");
         }
 
         return new Person(nodeIndi.getObject().getID(), name, rEvent, new ArrayList<>(), isPrivate, uuid);
@@ -466,8 +466,7 @@ public class Loader {
                     date = parser.parse();
                 } catch (final Exception  e) {
                     if (!sDate.isEmpty()) {
-                        System.err.println("Error while parsing \"" + sDate + "\"");
-                        e.printStackTrace();
+                        Jul.log().log(Level.WARNING, "Invalid DATE format: \""+ sDate + "\"");
                     }
                     date = null;
                 }

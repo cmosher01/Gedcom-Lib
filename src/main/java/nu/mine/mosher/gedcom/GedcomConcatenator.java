@@ -2,11 +2,10 @@ package nu.mine.mosher.gedcom;
 
 
 import nu.mine.mosher.collection.TreeNode;
+import nu.mine.mosher.logging.Jul;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
-
 
 /**
  * Handles CONT and CONC tags in a given <code>GedcomTree</code> by appending
@@ -15,8 +14,6 @@ import java.util.logging.Logger;
  * @author Chris Mosher
  */
 public class GedcomConcatenator {
-    private static final Logger log = Logger.getLogger("");
-
     private final GedcomTree tree;
     private int maxLength = 0;
 
@@ -32,11 +29,11 @@ public class GedcomConcatenator {
 
         if (this.maxLength < 1) {
             this.maxLength = GedcomUnconcatenator.DEFAULT_MAX_LENGTH;
-            log.info("Did not detect any CONC or CONT lines in this file; defaulting to "+this.maxLength);
+            Jul.log().info("Did not detect any CONC or CONT lines in this file; defaulting to "+this.maxLength);
         }
 
         tree.setMaxLength(this.maxLength);
-        log.info("Detected maximum length for CONC/CONT line breaking of: " + Integer.toString(this.maxLength));
+        Jul.log().info("Detected maximum length for CONC/CONT line breaking of: " + this.maxLength);
     }
 
     private void concatenateHelper(final TreeNode<GedcomLine> nodeParent) {

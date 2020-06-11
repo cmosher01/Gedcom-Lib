@@ -1,5 +1,6 @@
 package nu.mine.mosher.gedcom;
 
+import nu.mine.mosher.logging.Jul;
 import org.mozilla.universalchardet.UnicodeBOMInputStream;
 import org.mozilla.universalchardet.UniversalDetector;
 
@@ -8,13 +9,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GedcomEncodingDetector {
-    private static final Logger log = Logger.getLogger("");
-
 //    public static void main(final String... args) throws IOException {
 //        final BufferedInputStream in = getStandardInput();
 //
@@ -34,15 +32,15 @@ public class GedcomEncodingDetector {
         final Optional<Charset> charsetDetected = detectCharsetDefault(this.gedcom);
 
         if (charsetDetected.isPresent()) {
-            log.info(String.format("First guess at character encoding: %s", charsetDetected.get().displayName()));
+            Jul.log().log(Level.INFO, String.format("First guess at character encoding: %s", charsetDetected.get().displayName()));
         } else {
-            log.info("First guess at character encoding failed.");
-            log.info(String.format("First guess at character encoding defaulting to: %s", Charset.defaultCharset().displayName()));
+            Jul.log().log(Level.INFO, "First guess at character encoding failed.");
+            Jul.log().log(Level.INFO, String.format("First guess at character encoding defaulting to: %s", Charset.defaultCharset().displayName()));
         }
 
         final Optional<Charset> charsetDeclared = detectCharsetDeclared(this.gedcom, charsetDetected.orElse(Charset.defaultCharset()));
         if (charsetDeclared.isPresent()) {
-            log.info(String.format("Found declared character encoding: %s", charsetDeclared.get().displayName()));
+            Jul.log().log(Level.INFO, String.format("Found declared character encoding: %s", charsetDeclared.get().displayName()));
         }
 
         final Charset charsetResult;
@@ -56,7 +54,7 @@ public class GedcomEncodingDetector {
             charsetResult = Charset.defaultCharset();
         }
 
-        log.info(String.format("Will use character encoding: %s", charsetResult.displayName()));
+        Jul.log().log(Level.INFO, String.format("Will use character encoding: %s", charsetResult.displayName()));
 
         return charsetResult;
     }
@@ -126,17 +124,17 @@ public class GedcomEncodingDetector {
     private static Optional<Charset> charsetForName(final UniversalDetector detector) {
         final String c = detector.getDetectedCharset();
         if (Objects.isNull(c)) {
-            log.info("Character detector returned null.");
+            Jul.log().log(Level.INFO, "Character detector returned null.");
             return Optional.empty();
         }
         if (c.isEmpty()) {
-            log.info("Character detector returned empty string.");
+            Jul.log().log(Level.INFO, "Character detector returned empty string.");
             return Optional.empty();
         }
         try {
             return Optional.of(Charset.forName(c));
         } catch (final Exception ignore) {
-            log.log(Level.WARNING, String.format("Character detector returned invalid Charset name: %s", c), ignore);
+            Jul.log().log(Level.WARNING, String.format("Character detector returned invalid Charset name: %s", c), ignore);
             return Optional.empty();
         }
     }
@@ -154,13 +152,13 @@ public class GedcomEncodingDetector {
     private static Optional<Charset> tryDetectCharsetDeclared(final BufferedInputStream gedcomStream, final int cBytesToCheck, final Charset charsetBestGuess) throws IOException {
         final String headChar = interpretHeadChar(tryDetectCharsetNameDeclared(gedcomStream, cBytesToCheck, charsetBestGuess));
         if (headChar.isEmpty()) {
-            log.warning("Did not recognize that value for CHAR.");
+            Jul.log().log(Level.WARNING, "Did not recognize that value for CHAR.");
             return Optional.empty();
         }
         try {
             return Optional.of(Charset.forName(headChar));
         } catch (final Exception ignore) {
-            log.log(Level.WARNING, String.format("Invalid Charset name: %s", headChar), ignore);
+            Jul.log().log(Level.WARNING, String.format("Invalid Charset name: %s", headChar), ignore);
             return Optional.empty();
         }
     }
@@ -182,7 +180,7 @@ public class GedcomEncodingDetector {
             switch (state) {
                 case START: {
                     if (HEAD_LINE.matcher(line).matches()) {
-                        log.fine("Found HEAD line. Good.");
+                        Jul.log().log(Level.FINE, "Found HEAD line. Good.");
                         state = IN_HEAD;
                     }
                 }
@@ -194,19 +192,19 @@ public class GedcomEncodingDetector {
                         final Matcher matcher = CHAR_LINE.matcher(line);
                         if (matcher.matches()) {
                             final String charsetNameDeclared = matcher.group(1).trim();
-                            log.info(String.format("Found CHAR line with value: %s", charsetNameDeclared));
+                            Jul.log().log(Level.INFO, String.format("Found CHAR line with value: %s", charsetNameDeclared));
                             return charsetNameDeclared.toUpperCase();
                         }
                     }
                 }
                 break;
                 case OUT_HEAD: {
-                    log.warning("Could not find CHAR line.");
+                    Jul.log().log(Level.WARNING, "Could not find CHAR line.");
                     return "";
                 }
             }
         }
-        log.warning("Could not find HEAD line.");
+        Jul.log().log(Level.WARNING, "Could not find HEAD line.");
         return "";
     }
 
