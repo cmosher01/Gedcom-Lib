@@ -322,7 +322,9 @@ public class Loader {
         if (!line.getTag().equals(GedcomTag.UNKNOWN)) {
             return false;
         }
-        return line.getTagString().equals("_UID");
+        final String tagString = line.getTagString();
+        // FTM can output _GUID
+        return tagString.equals("_UID") || tagString.equals("_UUID") || tagString.equals("_GUID");
     }
 
     private static UUID parseUuid(final TreeNode<GedcomLine> nodeUuid) {
@@ -473,6 +475,7 @@ public class Loader {
             } else if (tag.equals(GedcomTag.PLAC)) {
                 place = line.getValue();
             } else if (tag.equals(GedcomTag.NOTE)) {
+                // TODO should we keep multiple NOTE records separate?
                 final String n = parseNote(node);
                 if (!note.isEmpty() && !n.isEmpty()) {
                     note += "\n";
