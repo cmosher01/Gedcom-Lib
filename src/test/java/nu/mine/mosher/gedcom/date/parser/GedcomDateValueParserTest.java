@@ -78,6 +78,12 @@ public class GedcomDateValueParserTest {
     }
 
     @Test
+    public void circaBCE() throws ParseException, DateRange.DatesOutOfOrder {
+        final DatePeriod period = parse("ABT 32 BC");
+        assertTrue(period.getStartDate().getEarliest().isCirca());
+    }
+
+    @Test
     public void nominalAD() throws ParseException, DateRange.DatesOutOfOrder {
         final DatePeriod period = parse("1860 AD");
         assertThat(period, is(new DatePeriod(new DateRange(new YMD(1860)))));
