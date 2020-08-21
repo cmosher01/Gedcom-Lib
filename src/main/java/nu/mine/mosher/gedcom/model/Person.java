@@ -22,6 +22,7 @@ public class Person implements Comparable<Person>, Privatizable
     private static final Pattern patternName = Pattern.compile("(.*)/(.*)/(.*)");
 
     private final UUID uuid;
+    private final boolean generatedUuid;
     private final String ID;
     private final String name;
     private final String nameSortable;
@@ -49,7 +50,8 @@ public class Person implements Comparable<Person>, Privatizable
     public Person(final String ID, final String name, final ArrayList<Event> rEvent, final ArrayList<Partnership> partnership,
         final boolean isPrivate, final UUID uuid)
     {
-        if (uuid == null)
+        this.generatedUuid = Objects.isNull(uuid);
+        if (this.generatedUuid)
         {
             this.uuid = UUID.randomUUID();
         }
@@ -448,6 +450,10 @@ public class Person implements Comparable<Person>, Privatizable
     public UUID getUuid()
     {
         return this.uuid;
+    }
+
+    public boolean isGeneratedUuid() {
+        return this.generatedUuid;
     }
 
     public String getID()

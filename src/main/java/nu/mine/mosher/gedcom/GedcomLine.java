@@ -12,6 +12,8 @@ import static java.text.Normalizer.normalize;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class GedcomLine implements Comparable<GedcomLine> {
+    private static final GedcomUidGenerator uid = new GedcomUidGenerator(20);
+
     private final int level;
     private final String id;
     private final String tagString;
@@ -132,7 +134,7 @@ public class GedcomLine implements Comparable<GedcomLine> {
     }
 
     public static GedcomLine createEmptyUid(final GedcomTag tag) {
-        return createEmptyId(UidGen.generate(), tag);
+        return createEmptyId(uid.generateId(), tag);
     }
 
     public static GedcomLine create(final int level, final GedcomTag tag, final String valueWithDoubledAts) {
@@ -144,7 +146,7 @@ public class GedcomLine implements Comparable<GedcomLine> {
     }
 
     public static GedcomLine createUid(final GedcomTag tag, final String valueWithDoubledAts) {
-        return createId(UidGen.generate(), tag, valueWithDoubledAts);
+        return createId(uid.generateId(), tag, valueWithDoubledAts);
     }
 
     public static GedcomLine createPointer(final int level, final GedcomTag tag, final String ptrWithoutAts) {
@@ -159,7 +161,7 @@ public class GedcomLine implements Comparable<GedcomLine> {
     public String toString() {
         final StringBuilder sb = new StringBuilder(256);
 
-        sb.append(Integer.toString(this.level)).append(" ");
+        sb.append(this.level).append(" ");
 
         if (hasID()) {
             sb.append("@").append(this.id).append("@ ");
