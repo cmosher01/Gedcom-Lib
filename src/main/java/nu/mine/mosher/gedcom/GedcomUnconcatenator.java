@@ -90,7 +90,7 @@ public class GedcomUnconcatenator {
      * When you use the resulting gedcomLines, you would typically use
      * only the value from the first line and reset the existing node's
      * value to it. Then append as (first-most) children the remaining
-     * gedcomLines to the exisring node;
+     * gedcomLines to the existing node;
      *
      * TODO look at the whole line, not just the value, and make all final GEDCOM lines the same length
      *
